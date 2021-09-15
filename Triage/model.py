@@ -1,6 +1,6 @@
 from mesa import Model
 from mesa.space import MultiGrid
-from mesa.time import SimultaneousActivation
+from mesa.time import RandomActivation
 from Triage.agents import *
 import random
 
@@ -8,7 +8,8 @@ class Triage(Model):
     """
     Model will keep track of cured patients and if Medic dies
     """
-    def __init__(self, width, height, init_medic=1, init_patients=2,init_cure=1, init_radio=1):
+
+    def __init__(self, width=10, height=10, init_medic=1, init_patients=2, init_cure=1, init_radio=1):
         self.width = width
         self.height = height
         self.init_medic = init_medic
@@ -16,8 +17,9 @@ class Triage(Model):
         self.init_cure = init_cure
         self.init_radio = init_radio
 
-        self.schedule = SimultaneousActivation(self)
-        self.grid = MultiGrid(self.width, self.height, torus=True) # TODO: Torus has to be false eventually
+        self.schedule = RandomActivation(self)
+        self.grid = MultiGrid(self.width, self.height, torus=False)
+        self.running = True
 
         # create Medic
         medic_poss = []
@@ -38,8 +40,8 @@ class Triage(Model):
         for i in range(init_cure):
             cure = Cure(coords[0], self)
             self.grid.place_agent(cure, coords[0])
-            coords.pop(0)
             self.schedule.add(cure)
+            coords.pop(0)
 
         # create Radio with surrounding static
         for i in range(init_radio):
@@ -51,7 +53,7 @@ class Triage(Model):
             for n in nb:
                 st = Static(n, self)
                 self.grid.place_agent(st, n)
-                self.schedule.add(st)                                       # Not sure if this is needed !!!!!
+                self.schedule.add(st)
             coords.pop(0)
 
         # create Patient with surrounding Scream
@@ -64,11 +66,12 @@ class Triage(Model):
             for n in nb:
                 sc = Scream(n,self)
                 self.grid.place_agent(sc, n)
-                self.schedule.add(sc)                                        # Not sure if this is needed !!!!!
+                self.schedule.add(sc)
             coords.pop(0)
 
     def step(self):
         self.schedule.step()
 
 e = Triage(10, 10, 1, 2, 1)
-e.step()
+for i in range(100):
+    e.step()
