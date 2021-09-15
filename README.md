@@ -12,7 +12,7 @@ This is an agent based simulation where the agent tries to complete a simulation
 ### Dependencies
 
 * Libraries: Mesa, random (Library install tutorial: https://docs.python.org/3/installing/index.html)
-* (" Waiting for code to be finished  ")
+* IDE: Pycharm https://www.jetbrains.com/pycharm/
 
 ### Installing
 
@@ -21,12 +21,11 @@ This is an agent based simulation where the agent tries to complete a simulation
 
 ### Executing program
 
-* How to run the program
-* Step-by-step bullets
-* (" Waiting for code to be finished  ")
+* Install mesa 
 ```
-code blocks for commands
+pip install mesa
 ```
+* download the code and run it inside an IDE
 
 
 ## Authors
