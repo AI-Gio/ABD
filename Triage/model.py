@@ -17,7 +17,7 @@ class Triage(Model):
         self.init_radio = init_radio
 
         self.schedule = SimultaneousActivation(self)
-        self.grid = MultiGrid(self.width, self.height, torus=True)
+        self.grid = MultiGrid(self.width, self.height, torus=True) # TODO: Torus has to be false eventually
 
         # create Medic
         medic_poss = []
