@@ -5,7 +5,7 @@ ABD Challenge: De Triage Simulatie
 
 ## Description
 
-* (" Adam ")
+This is an agent based simulation where the agent tries to complete a simulation by achieving or either failing their goal. In our current version of the simulation the agent will try the cure all the infected patients by finding a cure and healing them with it. The agent must try to complete the simulation with the help of deduction and logic in order to win. The agent can interact with the world and percieve it in a limited way.
 
 ## Getting Started
 
