@@ -18,6 +18,7 @@ class Medic(Agent):
         self.pos_patients = [] # de posities van de patients wanneer cure is gevonden
         self.path = [] # format = ((x,y))
         self.curr_cell_status = None
+        self.sight_array = []
 
     def move(self):
         """
@@ -28,6 +29,12 @@ class Medic(Agent):
 
         # if self.curr_cell_status is None:
         next_moves = self.model.grid.get_neighborhood(self.pos, self.moore, False)
+        for sight in next_moves:
+            if self.sight_array != []:
+                if sight in self.sight_array:
+                    break
+            self.sight_array.append(sight)
+
         next_move = random.choice(next_moves)
         # Now move:
         self.model.grid.move_agent(self, next_move)
@@ -44,7 +51,7 @@ class Medic(Agent):
         :return:
         """
         self.move()
-        print(self.pos)
+        print("\n" + str(self.unique_id) + ":\nPath:" + str(self.path) + "\nSightings: " + str(self.sight_array))
         x, y = self.pos
         this_cell = self.model.grid.get_cell_list_contents([self.pos])
         self.path.append((x,y))

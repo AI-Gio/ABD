@@ -42,7 +42,7 @@ def simulation_portrayal(agent):
     return portrayal
 
 # radius moet deelbaar zijn in width en height
-sim = CanvasGrid(simulation_portrayal, 5, 5, 500, 500)
+sim = CanvasGrid(simulation_portrayal, 10, 10, 500, 500)
 
 server = ModularServer(Triage, [sim],
                        "Triage")

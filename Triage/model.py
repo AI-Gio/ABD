@@ -12,7 +12,7 @@ class Triage(Model):
     verbose = True
 
 
-    def __init__(self, width=5, height=5, init_medic=1, init_patients=2, init_cure=1, init_radio=1):
+    def __init__(self, width=10, height=10, init_medic=1, init_patients=2, init_cure=1, init_radio=1):
         self.width = width
         self.height = height
         self.init_medic = init_medic
@@ -27,10 +27,16 @@ class Triage(Model):
         # create Medic
         medic_poss = []
         for m in range(init_medic):
-            medic = Medic((0,0), self, False)
+            medic1 = Medic((0,0), self, False)
             medic_poss.append((0,0))
-            self.grid.place_agent(medic, (0,0))
-            self.schedule.add(medic)
+            self.grid.place_agent(medic1, (0,0))
+            self.schedule.add(medic1)
+
+        for m in range(init_medic):
+            medic2 = Medic((0,1), self, False)
+            medic_poss.append((0,1))
+            self.grid.place_agent(medic2, (0,1))
+            self.schedule.add(medic2)
 
         # create unique coords for every agent except medic/static/scream
         total_a = init_cure + init_patients + init_radio
@@ -42,33 +48,33 @@ class Triage(Model):
         # create Cure
         for i in range(init_cure):
             cure = Cure(coords[0], self)
-            self.grid.place_agent(cure, coords[0])
+            ##self.grid.place_agent(cure, coords[0])
             self.schedule.add(cure)
             coords.pop(0)
 
         # create Radio with surrounding static
         for i in range(init_radio):
             radio = Radio(coords[0], self)
-            self.grid.place_agent(radio, coords[0])
+            ##self.grid.place_agent(radio, coords[0])
             self.schedule.add(radio)
             # add surrounding static from radio
             nb = self.grid.get_neighborhood(coords[0],False,False)
             for n in nb:
                 st = Static(n, self)
-                self.grid.place_agent(st, n)
+                ##self.grid.place_agent(st, n)
                 # self.schedule.add(st)
             coords.pop(0)
 
         # create Patient with surrounding Scream
         for i in range(init_patients):
             patient = Patient(coords[0], self)
-            self.grid.place_agent(patient, coords[0])
+            ##self.grid.place_agent(patient, coords[0])
             self.schedule.add(patient)
             # add surrounding scream from patient
             nb = self.grid.get_neighborhood(coords[0],False,False)
             for n in nb:
                 sc = Scream(n,self)
-                self.grid.place_agent(sc, n)
+                ##self.grid.place_agent(sc, n)
                 # self.schedule.add(sc)
             coords.pop(0)
         self.running = True
