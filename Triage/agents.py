@@ -7,6 +7,7 @@ class Medic(Agent):
     Medic walks around the grid to find patients, to obtain the cure/radio and to cure patients
     Medic dies when it gets on patients square
     """
+
     def __init__(self, pos, model, moore=False):
         super().__init__(pos, model)
         self.pos = pos
@@ -31,7 +32,7 @@ class Medic(Agent):
         # Now move:
         self.model.grid.move_agent(self, next_move)
 
-        # if self.curr_cell_status is Static:
+        # if self.curr_cell_status is Scream:
 
 
         # TODO: here must come the logic from the medic what to do based on information of the past and informations surrounding him
@@ -60,15 +61,14 @@ class Medic(Agent):
 
         if len(patient) > 0:
             self.curr_cell_status = Patient
-            self.model.grid.remove_agent(self)
+            # self.model.grid.remove_agent(self)
             print("You lost!")
-            quit()
 
         # als je radio hebt dan krijg je coords van de cure
         if len(radio) > 0:
             self.curr_cell_status = Radio
             self.radio_possible = []
-            g = self.model.grid.coord_iter()
+            # g = self.model.grid.coord_iter()
             for (obj, x, y) in g:
                 if len(obj) > 0:
                     if isinstance(obj[0], Cure):
@@ -80,6 +80,7 @@ class Medic(Agent):
         # als je cure hebt dan krijg je de coords van de patienten
         if len(cure) > 0 :
             print("Cure")
+            # self.model.grid.remove_agent(self.pos, Medic)
             self.curr_cell_status = Cure
             g = self.model.grid.coord_iter()
             for (obj, x, y) in g:

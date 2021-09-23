@@ -9,7 +9,10 @@ class Triage(Model):
     Model will keep track of cured patients and if Medic dies
     """
 
-    def __init__(self, width=10, height=10, init_medic=1, init_patients=2, init_cure=1, init_radio=1):
+    verbose = True
+
+
+    def __init__(self, width=5, height=5, init_medic=1, init_patients=2, init_cure=1, init_radio=1):
         self.width = width
         self.height = height
         self.init_medic = init_medic
@@ -19,7 +22,7 @@ class Triage(Model):
 
         self.schedule = RandomActivation(self)
         self.grid = MultiGrid(self.width, self.height, torus=False)
-        self.running = True
+
 
         # create Medic
         medic_poss = []
@@ -53,7 +56,7 @@ class Triage(Model):
             for n in nb:
                 st = Static(n, self)
                 self.grid.place_agent(st, n)
-                self.schedule.add(st)
+                # self.schedule.add(st)
             coords.pop(0)
 
         # create Patient with surrounding Scream
@@ -66,12 +69,13 @@ class Triage(Model):
             for n in nb:
                 sc = Scream(n,self)
                 self.grid.place_agent(sc, n)
-                self.schedule.add(sc)
+                # self.schedule.add(sc)
             coords.pop(0)
+        self.running = True
 
     def step(self):
         self.schedule.step()
 
-e = Triage(10, 10, 1, 2, 1)
-for i in range(100):
-    e.step()
+# e = Triage(10, 10, 1, 2, 1)
+# for i in range(100):
+#     e.step()

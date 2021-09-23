@@ -9,35 +9,40 @@ def simulation_portrayal(agent):
         return
 
     portrayal = {"Shape": "circle",
-                 "Color":"red",
-                 "Filled": "true"}
+                 "Color":"#ffffff",
+                 "Filled": "true",
+                 "r": 1}
 
     if type(agent) is Medic:
         portrayal["text"] = "👨"
-        portrayal["r"] = 0.8
-        portrayal["Layer"] = 1
-
-    elif type(agent) is Patient:
-        portrayal["r"] = 0.5
-        portrayal["Layer"] = 2
-
-    elif type(agent) is Cure:
-        portrayal["Layer"] = 0
-        portrayal["w"] = 1
-        portrayal["h"] = 1
-
-    elif type(agent) is Radio:
+        portrayal["Color"] = "#ffffff"
         portrayal["Layer"] = 5
 
+    elif type(agent) is Patient:
+        portrayal["text"] = "🤕"
+        portrayal["Color"] = "Black"
+        portrayal["Layer"] = 0
+
+    elif type(agent) is Cure:
+        portrayal["text"] = "💉"
+        portrayal["Layer"] = 0
+
+    elif type(agent) is Radio:
+        portrayal["text"] = "📻"
+        portrayal["Layer"] = 0
+
     elif type(agent) is Static:
-        portrayal["Layer"] = 4
+        portrayal["text"] = "🔊"
+        portrayal["Layer"] = 0
 
     elif type(agent) is Scream:
+        portrayal["text"] = "💤"
         portrayal["Layer"] = 3
 
     return portrayal
 
-sim = CanvasGrid(simulation_portrayal, 20, 20, 500, 500)
+# radius moet deelbaar zijn in width en height
+sim = CanvasGrid(simulation_portrayal, 5, 5, 500, 500)
 
 server = ModularServer(Triage, [sim],
                        "Triage")
