@@ -9,6 +9,8 @@ class Medic(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.brancard = []
+        self.path = []
+        self.known_p = []
 
     def inspect(self):
         """
@@ -55,6 +57,32 @@ class Medic(Agent):
         """
         Searches for patients and bring them back decided by calculations
         """
+        if len(self.brancard) > 0:
+            self.goBase()
+
+        else:
+            pass
+
+        nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
+        self.path.extend(nb_coords)
+
+        cell_cross = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False)
+        own_cell = self.model.grid.get_cell_list_contents([self.pos])
+
+        patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
+        medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
+
+        if len(patient) > 0:
+            self.pickupPatient()
+
+        if len(medcamp) > 0:
+            self.brancard = []
+
+
+
+
+
+
 
 class Patient(Agent):
     """
