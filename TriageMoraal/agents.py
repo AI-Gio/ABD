@@ -11,6 +11,7 @@ class Medic(Agent):
         self.brancard = []
         self.path = []
         self.known_p = []
+        self.walked = [(0, 0)]
 
     def inspect(self):
         """
@@ -21,10 +22,22 @@ class Medic(Agent):
 
     # todo: hier komt assesment of patient meegenomen moet worden terug naar kamp of niet
 
-    def wander(self):
+    def wander(self, surround):
         """
         Medic wanders through field mostly away from base and tries to explore yet haven't found locations
         """
+        mostunknown = []
+        for loc in surround:
+            sursuround = self.model.grid.get_neighborhood(loc, moore=False, include_center=True)
+            # print(self.walked, loc)
+            curunknown = 0
+            for surloc in sursuround:
+                if surloc not in self.walked:
+                    curunknown += 1
+            if mostunknown == [] or mostunknown[0] < curunknown:
+                mostunknown = [curunknown, loc]
+
+        self.model.grid.move_agent(self, mostunknown[1])
         # todo: gaat opzoek naar vakjes die nog niet bezocht zijn
         pass
 
@@ -36,15 +49,28 @@ class Medic(Agent):
         pass
         # todo: medic loopt ergens naar een punt straight toe
 
-    def pickupPatient(self):
+    def pickupPatient(self, patient):
         """
         Medic picks up patient from field
         :return:
         """
+        self.brancard.append(patient)
+        self.model.grid.remove_agent(patient)
         pass
         # todo: patient word opgepakt en toegevoegd aan brancard
 
-    def goBase(self):
+    def goBase(self, neighbors):
+        camploc = (0, 0)
+        selfdist = abs(camploc[0]-self.pos[0]) + abs(camploc[1]-self.pos[1])
+        mindist = [selfdist, self.pos]
+        for i in self.walked:
+            if i in neighbors:
+                curdist = abs(camploc[0]-i[0]) + abs(camploc[1]-i[1])
+                if curdist < mindist[0]:
+                    mindist = [curdist, i]
+
+        self.model.grid.move_agent(self, mindist[1])
+
         """
         Uses shortest path alg to return to base to return patient
         :return:
@@ -58,26 +84,41 @@ class Medic(Agent):
         """
         # todo: medic neemt zoiezo patient mee en als patient dood gaat onderweg dan gaat zijn emotianal_staat naar beneden
         # todo: als patient doodgaat onderweg word hij misschien wel of niet meegenomen naar medcamp
-        if len(self.brancard) > 0:
-            self.goBase()
+        print(self.brancard)
+        # if len(self.brancard) > 0:
+        #     self.goBase()
+        #
+        # else:
+        #     pass
 
-        else:
-            pass
-
-        nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
+        nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
+        print(nb_coords)
         self.path.extend(nb_coords)
 
         cell_cross = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False)
+        # print(cell_cross)
         own_cell = self.model.grid.get_cell_list_contents([self.pos])
+        print(own_cell)
 
         patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
         medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
 
-        if len(patient) > 0:
-            self.pickupPatient()
-
+        # if len(patient) > 0:
+        #     print('ik pak een patient op')
+        #     self.pickupPatient(cell_cross[0])
         if len(medcamp) > 0:
+            print('op camp')
             self.brancard = []
+
+        if len(patient) > 0:
+            print('ik pak een patient op')
+            self.pickupPatient(cell_cross[0])
+        elif len(self.brancard) > 0:
+            print('ben niet bij camp maar heb patient')
+            self.goBase(nb_coords)
+        else:
+            self.wander(nb_coords)
+
 
 
 class Patient(Agent):
