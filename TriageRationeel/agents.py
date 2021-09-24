@@ -49,6 +49,15 @@ class Medic(Agent):
         Uses shortest path alg to return to base to return patient
         :return:
         """
+        while self.pos != (0.0):
+            if [self.pos[0] - 1, self.pos[1]] in self.path:
+                self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1])) #naar links als het pad er is
+            elif [self.pos[0], self.pos[1] - 1] in self.path:
+                self.model.grid.move_agent(self, (self.pos[0], self.pos[1] - 1))#naar onder als het pad er is
+            elif self.pos[0] > 0:
+                self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1]))#naar links als de coordinaten meer zijn dan 0
+            else:
+                self.model.grid.move_agent(self, (self.pos[0], self.pos[1] - 1))#naar onder
         # todo: Medic gaat meteen met shortest path naar medcamp
         pass
 
