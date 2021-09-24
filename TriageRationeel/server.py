@@ -1,8 +1,8 @@
 from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.modules import CanvasGrid
 
-from Triage2.agents import *
-from Triage2.model import Triage
+from TriageRationeel.agents import *
+from TriageRationeel.model import Triage
 
 def sim_portrayal(agent):
     if agent is None:
@@ -16,6 +16,7 @@ def sim_portrayal(agent):
 
     if type(agent) is Medic:
         portrayal["text"] = "👨"
+        portrayal["Color"] = "#d44e4e"
         portrayal["Layer"] = 5
 
 
@@ -25,6 +26,7 @@ def sim_portrayal(agent):
 
     elif type(agent) is MedCamp:
         portrayal["text"] = "🏥"
+        portrayal["Color"] = "#ff9e9e"
 
     return portrayal
 

@@ -23,6 +23,7 @@ class Medic(Agent):
         """
         Medic wanders through field mostly away from base and tries to explore yet haven't found locations
         """
+        # todo: 
         pass
 
     def walk(self):
