@@ -30,19 +30,19 @@ class Medic(Agent):
 
     def walk(self):
         """
-        Medic
+        Medic walks straight to a coordinate
         :return:
         """
         # todo: medic loopt ergens naar een punt straight toe
         pass
 
-    def pickupPatient(self):
+    def pickupPatient(self, patient):
         """
         Medic picks up patient from field
-        :return:
         """
         # todo: patient word opgepakt en toegevoegd aan brancard
-        pass
+        self.brancard.append(patient)
+        self.model.grid.remove_agent(patient)    # not sure if patient is still in schedule after removing
 
     def goBase(self):
         """
@@ -69,9 +69,12 @@ class Medic(Agent):
         # every interaction is going to be coded here
         if len(self.brancard) > 0:
             self.goBase()
+            if self.brancard[0].health == 0:
+                self.brancard = []
+                self.wander()
 
-        else:
-            pass
+        if len(self.known_p) > 0:
+            self.walk()
 
         nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
         self.path.extend(nb_coords)
@@ -83,7 +86,7 @@ class Medic(Agent):
         medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
 
         if len(patient) > 0:
-            self.pickupPatient()
+            self.pickupPatient(patient[0])
 
         if len(medcamp) > 0:
             self.brancard = []
