@@ -13,11 +13,15 @@ class Medic(Agent):
         self.known_p = []
         # hier word coords opgeslagen van onderweg gevonden patients en dan met walk gaat de medic daar bij de volgende stap ernaartoe
 
-    def inspect(self):
+    def inspect(self, patient):
         """
         Medic inspects patient how severe the situation is and decides then what to do next
         :return:
         """
+        if self.pos[0] + self.pos[1] > patient.status:
+            print("Fuck this guy")
+        else:
+            print("Come. this is no place to die")
         # todo: hier komt assesment of patient meegenomen moet worden terug naar kamp of niet
         pass
 
