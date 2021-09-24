@@ -11,19 +11,21 @@ class Medic(Agent):
         self.brancard = []
         self.path = []
         self.known_p = []
+        # hier word coords opgeslagen van onderweg gevonden patients en dan met walk gaat de medic daar bij de volgende stap ernaartoe
 
     def inspect(self):
         """
         Medic inspects patient how severe the situation is and decides then what to do next
         :return:
         """
+        # todo: hier komt assesment of patient meegenomen moet worden terug naar kamp of niet
         pass
 
     def wander(self):
         """
         Medic wanders through field mostly away from base and tries to explore yet haven't found locations
         """
-        # todo:
+        # todo: gaat opzoek naar vakjes die nog niet bezocht zijn
         pass
 
     def walk(self):
@@ -31,6 +33,7 @@ class Medic(Agent):
         Medic
         :return:
         """
+        # todo: medic loopt ergens naar een punt straight toe
         pass
 
     def pickupPatient(self):
@@ -38,13 +41,7 @@ class Medic(Agent):
         Medic picks up patient from field
         :return:
         """
-        pass
-
-    def percieve(self):
-        """
-        Gets information from squares surrounding him
-        :return:
-        """
+        # todo: patient word opgepakt en toegevoegd aan brancard
         pass
 
     def goBase(self):
@@ -52,12 +49,15 @@ class Medic(Agent):
         Uses shortest path alg to return to base to return patient
         :return:
         """
+        # todo: Medic gaat meteen met shortest path naar medcamp
         pass
 
     def step(self):
         """
         Searches for patients and bring them back decided by calculations
         """
+        # todo: keuze gemaakt worden of patient terug gebracht word of niet
+        # every interaction is going to be coded here
         if len(self.brancard) > 0:
             self.goBase()
 
@@ -80,11 +80,6 @@ class Medic(Agent):
             self.brancard = []
 
 
-
-
-
-
-
 class Patient(Agent):
     """
     Person that is stuck somewhere in the field after a disaster
@@ -92,7 +87,7 @@ class Patient(Agent):
     def __int__(self, unique_id, model, severity: int):
         super().__init__(unique_id, model)
         self.severity = severity
-        # todo: hier moet iets van een calc komen hoeveel vakjes de patient heeft voordat hij dood gaat
+        # todo: patient heeft een type severity en met die severity krijgt hij ook een health (prob met formule)
 
     def step(self):
         pass
@@ -101,6 +96,7 @@ class MedCamp(Agent):
     """
     MedCamp is where Medic will start from and go to, to retrieve Patient
     """
+    # todo: here are the patients being counted that are retrieved so that you can hover over medcamp in sim and see that number
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
