@@ -28,11 +28,30 @@ class Medic(Agent):
         # todo: gaat opzoek naar vakjes die nog niet bezocht zijn
         pass
 
-    def walk(self):
+    def walk(self, point = (3,3)):
         """
         Medic walks straight to a coordinate
         :return:
         """
+        if self.pos[0] != point[0]:
+            if point[0] - self.pos[0] > 0 and (self.pos[0] + 1, self.pos[1]) in self.path: #naar rechts moet en op pad
+                self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1]))
+            elif point[0] - self.pos[0] < 0 and (self.pos[0] - 1, self.pos[1]) in self.path:#naar links moet en op pad
+                self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1]))
+            elif point[1] - self.pos[1] > 0 and (self.pos[0], self.pos[1] + 1) in self.path:#naar boven moet en op pad
+                self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1] + 1))
+            elif point[1] - self.pos[1] < 0 and (self.pos[0], self.pos[1] - 1) in self.path:#naar onder moet en op pad
+                self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1] - 1))
+
+            elif point[0] - self.pos[0] > 0 and (self.pos[0] + 1, self.pos[1]) in self.path: #naar rechts moet
+                self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1]))
+            elif point[0] - self.pos[0] < 0 and (self.pos[0] - 1, self.pos[1]) in self.path:#naar links moet
+                self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1]))
+            elif point[1] - self.pos[1] > 0 and (self.pos[0], self.pos[1] + 1) in self.path:#naar boven moet
+                self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1] + 1))
+            elif point[1] - self.pos[1] < 0 and (self.pos[0], self.pos[1] - 1) in self.path:#naar onder moet
+                self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1] - 1))
+
         # todo: medic loopt ergens naar een punt straight toe
         pass
 
@@ -49,15 +68,14 @@ class Medic(Agent):
         Uses shortest path alg to return to base to return patient
         :return:
         """
-        while self.pos != (0.0):
-            if [self.pos[0] - 1, self.pos[1]] in self.path:
-                self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1])) #naar links als het pad er is
-            elif [self.pos[0], self.pos[1] - 1] in self.path:
-                self.model.grid.move_agent(self, (self.pos[0], self.pos[1] - 1))#naar onder als het pad er is
-            elif self.pos[0] > 0:
-                self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1]))#naar links als de coordinaten meer zijn dan 0
-            else:
-                self.model.grid.move_agent(self, (self.pos[0], self.pos[1] - 1))#naar onder
+        if [self.pos[0] - 1, self.pos[1]] in self.path:
+            self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1])) #naar links als het pad er is
+        elif [self.pos[0], self.pos[1] - 1] in self.path:
+            self.model.grid.move_agent(self, (self.pos[0], self.pos[1] - 1))#naar onder als het pad er is
+        elif self.pos[0] > 0:
+            self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1]))#naar links als de coordinaten meer zijn dan 0
+        else:
+            self.model.grid.move_agent(self, (self.pos[0], self.pos[1] - 1))#naar onder
         # todo: Medic gaat meteen met shortest path naar medcamp
         pass
 
