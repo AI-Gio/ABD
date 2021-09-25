@@ -1,4 +1,5 @@
 from mesa import Agent
+import random
 
 
 class Medic(Agent):
@@ -11,7 +12,7 @@ class Medic(Agent):
         self.brancard = []
         self.path = []
         self.known_p = []
-        self.walked = [(0, 0)]
+        self.walked = [(0, 0), (0, 1), (1, 0)]  # known locations (every walked loc + their surroundings)
 
     def inspect(self):
         """
@@ -26,19 +27,23 @@ class Medic(Agent):
         """
         Medic wanders through field mostly away from base and tries to explore yet haven't found locations
         """
-        mostunknown = []
+        choices = {}
         for loc in surround:
             sursuround = self.model.grid.get_neighborhood(loc, moore=False, include_center=True)
-            # print(self.walked, loc)
-            curunknown = 0
+            score = 0
             for surloc in sursuround:
                 if surloc not in self.walked:
-                    curunknown += 1
-            if mostunknown == [] or mostunknown[0] < curunknown:
-                mostunknown = [curunknown, loc]
+                    score += 1
+            choices[loc] = score
+        
+        # get all best choices, shuffle and pick one randomly
+        possible_choices = [k for k, v in choices.items() if v == max(choices.values())]
+        choice = random.choice(possible_choices)
+        self.model.grid.move_agent(self, choice)
 
-        self.model.grid.move_agent(self, mostunknown[1])
-        # todo: gaat opzoek naar vakjes die nog niet bezocht zijn
+        # add new locations to database of known locations
+        new_loc = self.model.grid.get_neighborhood(choice, moore=False, include_center=True)
+        self.walked = self.walked + list(set(new_loc) - set(self.walked))  # removes duplicates
         pass
 
     def walk(self):
@@ -92,7 +97,7 @@ class Medic(Agent):
         #     pass
 
         nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
-        print(nb_coords)
+
         self.path.extend(nb_coords)
 
         cell_cross = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False)
