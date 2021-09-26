@@ -13,7 +13,7 @@ class Medic(Agent):
         self.path = []
         self.known_p = []
         self.walked = [(0, 0), (0, 1), (1, 0)]  # known locations (every walked loc + their surroundings)
-
+        self.current_path = ()
     def inspect(self):
         """
         Medic inspects patient how severe the situation is and decides then what to do next
@@ -22,28 +22,42 @@ class Medic(Agent):
         pass
 
     # todo: hier komt assesment of patient meegenomen moet worden terug naar kamp of niet
+    def wander_choice_maker(self, locations, counter=0):
+        choices = {}
+        for pos in locations:
+            sur = self.model.grid.get_neighborhood(list(pos)[-1], moore=False, include_center=False)
+            for loc in sur:
+                sursuround = self.model.grid.get_neighborhood(loc, moore=False, include_center=True)
+                score = 0
+                for surloc in sursuround:
+                    if surloc not in self.walked:
+                        score += 1
+                path = list(pos)
+                path.append(loc)
+                choices[tuple(path)] = score
+
+        possible_choices = [k for k, v in choices.items() if v == max(choices.values())]
+
+        if (len(possible_choices) > 1 and counter < 10) and max(choices.values()) < 4:
+            possible_choices = self.wander_choice_maker(possible_choices, counter+1)
+        return possible_choices
 
     def wander(self, surround):
         """
         Medic wanders through field mostly away from base and tries to explore yet haven't found locations
         """
-        choices = {}
-        for loc in surround:
-            sursuround = self.model.grid.get_neighborhood(loc, moore=False, include_center=True)
-            score = 0
-            for surloc in sursuround:
-                if surloc not in self.walked:
-                    score += 1
-            choices[loc] = score
-        
-        # get all best choices, shuffle and pick one randomly
-        possible_choices = [k for k, v in choices.items() if v == max(choices.values())]
-        choice = random.choice(possible_choices)
-        self.model.grid.move_agent(self, choice)
+        if len(self.current_path) < 1:
+            # get all best choices, shuffle and pick one randomly
+            original_path = [[]]
+            original_path[0].append(self.pos)
+            possible_choices = self.wander_choice_maker(original_path)
+            self.current_path = list(random.choice(possible_choices)[1::])
 
+        self.model.grid.move_agent(self, self.current_path[0])
         # add new locations to database of known locations
-        new_loc = self.model.grid.get_neighborhood(choice, moore=False, include_center=True)
+        new_loc = self.model.grid.get_neighborhood(self.current_path[0], moore=False, include_center=True)
         self.walked = self.walked + list(set(new_loc) - set(self.walked))  # removes duplicates
+        del self.current_path[0]
         pass
 
     def walk(self):
