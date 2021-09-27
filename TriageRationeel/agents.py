@@ -1,5 +1,5 @@
 from mesa import Agent
-
+import random
 
 class Medic(Agent):
     """
@@ -120,11 +120,29 @@ class Patient(Agent):
     """
     def __int__(self, unique_id, model, severity: int):
         super().__init__(unique_id, model)
+        severity = random.randint(0, 5)
         self.severity = severity
         # todo: patient heeft een type severity en met die severity krijgt hij ook een health (prob met formule)
 
     def step(self):
+        self.healthReduce()
         pass
+
+    def createHealth(self, gridSize:list):
+        healthChart = [100, 80, 60, 40, 20]
+        if gridSize[0] > gridSize[1]:
+            self.health = gridSize[0] / 100 * healthChart[self.severity-1]
+        else:
+            self.health = gridSize[1] / 100 * healthChart[self.severity-1]
+
+    def healthReduce(self):
+        if self.health > 0:
+            self.health = self.health - 1
+        else:
+            print("Haha Man I'm dead")
+
+
+
 
 class MedCamp(Agent):
     """

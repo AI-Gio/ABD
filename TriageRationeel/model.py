@@ -35,6 +35,7 @@ class Triage(Model):
         for p in range(init_patient):
             print(p+1)
             patient = Patient(p+1, self)
+            patient.createHealth([width, height])
             self.grid.place_agent(patient, coords[0])
             coords.pop(0)
             self.schedule.add(patient)
