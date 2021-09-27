@@ -42,7 +42,7 @@ class Medic(Agent):
             possible_choices = self.wander_choice_maker(possible_choices, counter+1)
         return possible_choices
 
-    def wander(self, surround):
+    def wander(self):
         """
         Medic wanders through field mostly away from base and tries to explore yet haven't found locations
         """
@@ -60,11 +60,21 @@ class Medic(Agent):
         del self.current_path[0]
         pass
 
-    def walk(self):
+    def walk(self, destination):
         """
         Medic
         :return:
         """
+        neighbors = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
+        selfdist = abs(destination[0] - self.pos[0]) + abs(destination[1] - self.pos[1])
+        mindist = [selfdist, self.pos]
+        for i in self.walked:
+            if i in neighbors:
+                curdist = abs(destination[0] - i[0]) + abs(destination[1] - i[1])
+                if curdist < mindist[0]:
+                    mindist = [curdist, i]
+
+        self.model.grid.move_agent(self, mindist[1])
         pass
         # todo: medic loopt ergens naar een punt straight toe
 
@@ -75,11 +85,14 @@ class Medic(Agent):
         """
         self.brancard.append(patient)
         self.model.grid.remove_agent(patient)
+        if patient in self.known_p:
+            self.known_p.remove(patient)
         pass
         # todo: patient word opgepakt en toegevoegd aan brancard
 
-    def goBase(self, neighbors):
+    def goBase(self):
         camploc = (0, 0)
+        neighbors = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
         selfdist = abs(camploc[0]-self.pos[0]) + abs(camploc[1]-self.pos[1])
         mindist = [selfdist, self.pos]
         for i in self.walked:
@@ -130,13 +143,26 @@ class Medic(Agent):
             self.brancard = []
 
         if len(patient) > 0:
-            print('ik pak een patient op')
-            self.pickupPatient(cell_cross[0])
+            if len(self.brancard) > 0:
+                for p in range(len(patient)):
+                    if p not in self.known_p:
+                        self.known_p.append(p)
+                self.goBase()
+            elif len(patient) > 1:
+                for p in range(1, len(patient)):
+                    if p not in self.known_p:
+                        self.known_p.append(p)
+                self.pickupPatient(patient[0])
+            else:
+                print('ik pak een patient op')
+                self.pickupPatient(patient[0])
         elif len(self.brancard) > 0:
             print('ben niet bij camp maar heb patient')
-            self.goBase(nb_coords)
+            self.goBase()
+        elif len(self.known_p) > 0:
+            self.walk(self.known_p[0].pos)
         else:
-            self.wander(nb_coords)
+            self.wander()
 
 
 
