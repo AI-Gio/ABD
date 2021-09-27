@@ -91,6 +91,7 @@ class Medic(Agent):
         # every interaction is going to be coded here
         if len(self.brancard) > 0:
             self.goBase()
+            (self.brancard)[0].pickedUp = True
             if self.brancard[0].health == 0:
                 self.brancard = []
                 self.wander()
@@ -122,10 +123,12 @@ class Patient(Agent):
         super().__init__(unique_id, model)
         severity = random.randint(0, 5)
         self.severity = severity
+        self.pickedUp = False
         # todo: patient heeft een type severity en met die severity krijgt hij ook een health (prob met formule)
 
     def step(self):
-        self.healthReduce()
+        if self.pickedUp:
+            self.healthReduce()
         pass
 
     def createHealth(self, gridSize:list):
