@@ -103,22 +103,6 @@ class Medic(Agent):
         """
         # todo: keuze gemaakt worden of patient terug gebracht word of niet
         # every interaction is going to be coded here
-        nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
-        self.path.extend(nb_coords)
-
-        if len(self.brancard) > 0:
-            self.goBase()
-            self.brancard[0].healthReduce()
-            if self.brancard[0].health == 0:
-                self.brancard = []
-                self.wander()
-
-        if len(self.known_p) > 0:
-            self.walk(self.known_p[0])#
-
-        if len(self.brancard) == 0 and len(self.known_p) == 0:
-            self.wander(nb_coords)
-
         cell_cross = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False)
         own_cell = self.model.grid.get_cell_list_contents([self.pos])
 
@@ -127,11 +111,31 @@ class Medic(Agent):
 
         if len(patient) > 0 and len(self.brancard) == 0:
             self.pickupPatient(patient[0])
-        elif len(patient) > 0 and len(self.brancard) > 0:
-             self.known_p.append(patient[0].pos)
+            patient.pop(0)
+        if len(patient) > 0 and len(self.brancard) > 0:
+            for p in patient:
+                self.known_p.append(p.pos)
+            print(self.known_p)
 
         if len(medcamp) > 0:
             self.brancard = []
+
+        nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
+        self.path.extend(nb_coords)
+
+        if len(self.brancard) > 0:
+            self.goBase()
+            self.brancard[0].healthReduce()
+            if self.brancard[0].health == 0:
+                print("Patient died")
+                self.brancard = []
+                self.wander(nb_coords)
+
+        elif len(self.known_p) > 0: # errorrrr
+            self.walk(self.known_p[0])
+
+        if len(self.brancard) == 0 and len(self.known_p) == 0:
+            self.wander(nb_coords)
 
 
 class Patient(Agent):
