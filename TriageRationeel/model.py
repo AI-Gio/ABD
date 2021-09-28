@@ -32,13 +32,12 @@ class Triage(Model):
         y_l = random.sample(range(1, height), total_a)
 
         coords = list(zip(x_l, y_l))
-        coords= [(2,0),(2,1),(2,2),(2,3),(3,0),(3,1),(3,2),(3,3),(3,4),(3,5)]
 
         for p in range(init_patient):
             # print(p+1)
             patient = Patient(p+1, self)
             patient.createHealth([width, height])
-            self.grid.place_agent(patient, coords[0])#coords[0]
+            self.grid.place_agent(patient, coords[0])
             coords.pop(0)
             self.schedule.add(patient)
 
