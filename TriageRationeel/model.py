@@ -21,6 +21,7 @@ class Triage(Model):
 
         medic_poss = []
         for m in range(init_medic):
+            # print(m)
             medic = Medic(0, self)
             medic_poss.append((0,0))
             self.grid.place_agent(medic, (0,0))
@@ -33,10 +34,10 @@ class Triage(Model):
         coords = list(zip(x_l, y_l))
 
         for p in range(init_patient):
-            print(p+1)
+            # print(p+1)
             patient = Patient(p+1, self)
             patient.createHealth([width, height])
-            self.grid.place_agent(patient, coords[0])
+            self.grid.place_agent(patient, (3,p))#coords[0]
             coords.pop(0)
             self.schedule.add(patient)
 
