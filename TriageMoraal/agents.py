@@ -14,7 +14,6 @@ class Medic(Agent):
         self.known_p = []
         self.walked = [(0, 0), (0, 1), (1, 0)]  # known locations (every walked loc + their surroundings)
         self.current_path = ()
-        self.dont_walk_goBase = []
     def inspect(self):
         """
         Medic inspects patient how severe the situation is and decides then what to do next
@@ -39,7 +38,7 @@ class Medic(Agent):
 
         possible_choices = [k for k, v in choices.items() if v == max(choices.values())]
 
-        if (len(possible_choices) > 1 and counter < 5) and max(choices.values()) < 4:
+        if (len(possible_choices) > 1 and counter < 10) and max(choices.values()) < 4:
             possible_choices = self.wander_choice_maker(possible_choices, counter+1)
         return possible_choices
 
@@ -66,16 +65,34 @@ class Medic(Agent):
         Medic
         :return:
         """
-        neighbors = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
-        selfdist = abs(destination[0] - self.pos[0]) + abs(destination[1] - self.pos[1])
-        mindist = [selfdist, self.pos]
-        for i in self.walked:
-            if i in neighbors:
-                curdist = abs(destination[0] - i[0]) + abs(destination[1] - i[1])
-                if curdist < mindist[0]:
-                    mindist = [curdist, i]
-
-        self.model.grid.move_agent(self, mindist[1])
+        self.current_path = ()
+        paths = {self.pos: [None, 0]}
+        x = 0
+        while destination not in paths.keys():
+            x += 1
+            pathscopy = paths.copy()
+            for i in pathscopy.keys():
+                next = self.model.grid.get_neighborhood(i, moore=False, include_center=False)
+                for j in next:
+                    if j in self.walked and j not in paths.keys():
+                        paths[j] = [i, x]
+        shortpath = [destination]
+        prev = paths[destination][0]
+        while prev:
+            shortpath.append(prev)
+            prev = paths[prev][0]
+        print(shortpath)
+        self.model.grid.move_agent(self, shortpath[-2])
+        # neighbors = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
+        # selfdist = abs(destination[0] - self.pos[0]) + abs(destination[1] - self.pos[1])
+        # mindist = [selfdist, self.pos]
+        # for i in self.walked:
+        #     if i in neighbors:
+        #         curdist = abs(destination[0] - i[0]) + abs(destination[1] - i[1])
+        #         if curdist < mindist[0]:
+        #             mindist = [curdist, i]
+        #
+        # self.model.grid.move_agent(self, mindist[1])
         pass
         # todo: medic loopt ergens naar een punt straight toe
 
@@ -94,18 +111,37 @@ class Medic(Agent):
     def goBase(self):
         camploc = (0, 0)
         self.current_path = ()
-        neighbors = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
-        selfdist = abs(camploc[0]-self.pos[0]) + abs(camploc[1]-self.pos[1])
-        mindist = [selfdist, self.pos]
-        print("neighbors: " + str(neighbors))
-        print("self.walked: " + str(self.walked))
-        for i in self.walked:
-            if i in neighbors:
-                curdist = abs(camploc[0]-i[0]) + abs(camploc[1]-i[1])
-                if curdist < mindist[0]:
-                    mindist = [curdist, i]
-
-        self.model.grid.move_agent(self, mindist[1])
+        paths = {self.pos: [None, 0]}
+        x = 0
+        while camploc not in paths.keys():
+            print('calculating path', paths.keys(), self.walked)
+            x += 1
+            pathscopy = paths.copy()
+            for i in pathscopy.keys():
+                next = self.model.grid.get_neighborhood(i, moore=False, include_center=False)
+                for j in next:
+                    if j in self.walked and j not in paths.keys():
+                        paths[j] = [i, x]
+        shortpath = [camploc]
+        prev = paths[camploc][0]
+        while prev:
+            print('in prev loop')
+            shortpath.append(prev)
+            prev = paths[prev][0]
+        print('dit is pad')
+        print(shortpath)
+        self.model.grid.move_agent(self, shortpath[-2])
+        # camploc = (0, 0)
+        # neighbors = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
+        # selfdist = abs(camploc[0]-self.pos[0]) + abs(camploc[1]-self.pos[1])
+        # mindist = [selfdist, self.pos]
+        # for i in self.walked:
+        #     if i in neighbors:
+        #         curdist = abs(camploc[0]-i[0]) + abs(camploc[1]-i[1])
+        #         if curdist < mindist[0]:
+        #             mindist = [curdist, i]
+        #
+        # self.model.grid.move_agent(self, mindist[1])
 
         """
         Uses shortest path alg to return to base to return patient
@@ -113,24 +149,6 @@ class Medic(Agent):
         """
         pass
         # todo: Medic gaat meteen met shortest path naar medcamp
-
-    def goBase_direct(self):
-        camploc = (0, 0)
-        current_neighbors = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
-        random.shuffle(current_neighbors)
-        current_neighbors_mutable = list(current_neighbors)
-        for choice in current_neighbors:
-            neigh_content = self.model.grid.get_cell_list_contents(choice)
-            if isinstance(neigh_content, Fire) or (choice in self.dont_walk_goBase):
-                current_neighbors_mutable.remove(choice)
-            elif (abs(camploc[0]-choice[0]) + abs(camploc[1]-choice[1])) < (abs(camploc[0]-self.pos[0]) + abs(camploc[1]-self.pos[1])):
-                self.model.grid.move_agent(self, choice)
-                return
-
-        self.dont_walk_goBase.append(self.pos)
-        random.shuffle(current_neighbors_mutable)
-        self.model.grid.move_agent(self, current_neighbors_mutable[0])
-        pass
 
     def step(self):
         """
@@ -169,7 +187,7 @@ class Medic(Agent):
                 for p in range(len(patient)):
                     if p not in self.known_p:
                         self.known_p.append(p)
-                self.goBase_direct()
+                self.goBase()
             elif len(patient) > 1:
                 for p in range(1, len(patient)):
                     if p not in self.known_p:
@@ -180,35 +198,22 @@ class Medic(Agent):
                 self.pickupPatient(patient[0])
         elif len(self.brancard) > 0:
             print('ben niet bij camp maar heb patient')
-            self.goBase_direct()
+            self.goBase()
         elif len(self.known_p) > 0:
             self.walk(self.known_p[0].pos)
         else:
             self.wander()
 
-class Fire(Agent):
-    """
-    Placeholder for fire, not used
-    """
 
-    def __init__(self, unique_id, model):
-        super().__init__(unique_id, model)
 
 class Patient(Agent):
     """
     Person that is stuck somewhere in the field after a disaster
     """
-    def __int__(self, location: tuple, unique_id, model):
+    def __int__(self, unique_id, model, severity: int):
         super().__init__(unique_id, model)
-        self.location = location
-        self.health = 0
+        self.severity = severity
         # todo: patient heeft een type severity en met die severity krijgt hij ook een health (prob met formule)
-
-    def set_severity(self):
-        survival_chance = 0.5
-
-
-
 
     def step(self):
         pass
