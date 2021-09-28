@@ -26,7 +26,7 @@ class Triage(Model):
             self.grid.place_agent(medic, (0,0))
             self.schedule.add(medic)
 
-        total_a = init_patient #+ init_radio + init_cure
+        total_a = init_patient#+ init_radio + init_cure
         x_l = random.sample(range(1, width), total_a)
         y_l = random.sample(range(1, height), total_a)
 
@@ -39,6 +39,11 @@ class Triage(Model):
             self.grid.place_agent(patient, coords[0])
             coords.pop(0)
             self.schedule.add(patient)
+
+        medcamp = MedCamp(112, self)
+        self.grid.place_agent(medcamp, (0,0))
+        self.schedule.add(medcamp)
+
 
     def step(self):
         self.schedule.step()

@@ -19,7 +19,6 @@ def sim_portrayal(agent):
         portrayal["Color"] = "#d44e4e"
         portrayal["Layer"] = 5
 
-
     elif type(agent) is Patient:
         portrayal["text"] = "🤕"
         portrayal["Color"] = "#e3e3e3"

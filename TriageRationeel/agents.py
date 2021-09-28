@@ -25,14 +25,30 @@ class Medic(Agent):
         # todo: hier komt assesment of patient meegenomen moet worden terug naar kamp of niet
         pass
 
-    def wander(self):
+    def wander(self, surround):
         """
         Medic wanders through field mostly away from base and tries to explore yet haven't found locations
         """
         # todo: gaat opzoek naar vakjes die nog niet bezocht zijn
-        pass
+        choices = {}
+        for loc in surround:
+            sursuround = self.model.grid.get_neighborhood(loc, moore=False, include_center=True)
+            score = 0
+            for surloc in sursuround:
+                if surloc not in self.path:
+                    score += 1
+            choices[loc] = score
 
-    def walk(self, point = (3,3)):
+        # get all best choices, shuffle and pick one randomly
+        possible_choices = [k for k, v in choices.items() if v == max(choices.values())]
+        choice = random.choice(possible_choices)
+        self.model.grid.move_agent(self, choice)
+
+        # add new locations to database of known locations
+        new_loc = self.model.grid.get_neighborhood(choice, moore=False, include_center=True)
+        self.path = self.path + list(set(new_loc) - set(self.path))  # removes duplicates
+
+    def walk(self, point): # point = (3,3)
         """
         Medic walks straight to a coordinate
         :return:
@@ -55,9 +71,10 @@ class Medic(Agent):
                 self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1] + 1))
             elif point[1] - self.pos[1] < 0 and (self.pos[0], self.pos[1] - 1) in self.path:#naar onder moet
                 self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1] - 1))
+        # x, y = self.pos
+
 
         # todo: medic loopt ergens naar een punt straight toe
-        pass
 
     def pickupPatient(self, patient):
         """
@@ -72,16 +89,13 @@ class Medic(Agent):
         Uses shortest path alg to return to base to return patient
         :return:
         """
-        if [self.pos[0] - 1, self.pos[1]] in self.path:
-            self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1])) #naar links als het pad er is
-        elif [self.pos[0], self.pos[1] - 1] in self.path:
-            self.model.grid.move_agent(self, (self.pos[0], self.pos[1] - 1))#naar onder als het pad er is
-        elif self.pos[0] > 0:
-            self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1]))#naar links als de coordinaten meer zijn dan 0
-        else:
-            self.model.grid.move_agent(self, (self.pos[0], self.pos[1] - 1))#naar onder
         # todo: Medic gaat meteen met shortest path naar medcamp
-        pass
+        x, y = self.pos
+        if self.pos[0] > 0:
+            self.model.grid.move_agent(self, (x-1,y))
+        elif self.pos[1] > 0:
+            self.model.grid.move_agent(self, (x,y-1))
+
 
     def step(self):
         """
@@ -89,18 +103,22 @@ class Medic(Agent):
         """
         # todo: keuze gemaakt worden of patient terug gebracht word of niet
         # every interaction is going to be coded here
-        if len(self.brancard) > 0:
-            self.goBase()
-            (self.brancard)[0].pickedUp = True
-            if self.brancard[0].health == 0:
-                self.brancard = []
-                self.wander()
-
-        if len(self.known_p) > 0:
-            self.walk()
-
         nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
         self.path.extend(nb_coords)
+
+        if len(self.brancard) > 0:
+            self.goBase()#nb_coords
+            # (self.brancard)[0].pickedUp = True
+            self.brancard[0].healthReduce()
+            if self.brancard[0].health == 0:
+                self.brancard = []
+                self.wander(nb_coords)
+
+        if len(self.known_p) > 0:
+            self.walk(self.known_p[0])#
+
+        if len(self.brancard) == 0 and len(self.known_p) == 0:
+            self.wander(nb_coords)
 
         cell_cross = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False)
         own_cell = self.model.grid.get_cell_list_contents([self.pos])
@@ -108,8 +126,10 @@ class Medic(Agent):
         patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
         medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
 
-        if len(patient) > 0:
+        if len(patient) > 0 and len(self.brancard) == 0:
             self.pickupPatient(patient[0])
+        if len(patient) > 0 and len(self.brancard) > 0:
+             self.known_p.append(patient[0].pos)
 
         if len(medcamp) > 0:
             self.brancard = []
@@ -119,7 +139,9 @@ class Patient(Agent):
     """
     Person that is stuck somewhere in the field after a disaster
     """
-    def __int__(self, unique_id, model, severity: int):
+    health = 100
+    severity = random.randint(1, 5)
+    def __int__(self, unique_id, model):
         super().__init__(unique_id, model)
         severity = random.randint(0, 5)
         self.severity = severity
@@ -127,9 +149,7 @@ class Patient(Agent):
         # todo: patient heeft een type severity en met die severity krijgt hij ook een health (prob met formule)
 
     def step(self):
-        if self.pickedUp:
-            self.healthReduce()
-        pass
+        self.healthReduce()
 
     def createHealth(self, gridSize:list):
         healthChart = [100, 80, 60, 40, 20]
