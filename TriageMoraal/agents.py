@@ -99,34 +99,6 @@ class Medic(Agent):
                         if k[0] == nextnode[0] and k[-2] < nextnode[-2]:
                             continue
                     opened.append(nextnode)
-        # self.current_path = ()
-        # paths = {self.pos: [None, 0]}
-        # x = 0
-        # while destination not in paths.keys():
-        #     x += 1
-        #     pathscopy = paths.copy()
-        #     for i in pathscopy.keys():
-        #         next = self.model.grid.get_neighborhood(i, moore=False, include_center=False)
-        #         for j in next:
-        #             if j in self.walked and j not in paths.keys():
-        #                 paths[j] = [i, x]
-        # shortpath = [destination]
-        # prev = paths[destination][0]
-        # while prev:
-        #     shortpath.append(prev)
-        #     prev = paths[prev][0]
-        # print(shortpath)
-        # self.model.grid.move_agent(self, shortpath[-2])
-        # # neighbors = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
-        # # selfdist = abs(destination[0] - self.pos[0]) + abs(destination[1] - self.pos[1])
-        # # mindist = [selfdist, self.pos]
-        # # for i in self.walked:
-        # #     if i in neighbors:
-        # #         curdist = abs(destination[0] - i[0]) + abs(destination[1] - i[1])
-        # #         if curdist < mindist[0]:
-        # #             mindist = [curdist, i]
-        # #
-        # # self.model.grid.move_agent(self, mindist[1])
         pass
         # todo: medic loopt ergens naar een punt straight toe
 
@@ -178,39 +150,6 @@ class Medic(Agent):
                         if k[0] == nextnode[0] and k[-2] < nextnode[-2]:
                             continue
                     opened.append(nextnode)
-        # self.current_path = ()
-        # paths = {self.pos: [None, 0]}
-        # x = 0
-        # while camploc not in paths.keys():
-        #     print('calculating path', paths.keys(), self.walked)
-        #     x += 1
-        #     pathscopy = paths.copy()
-        #     for i in pathscopy.keys():
-        #         next = self.model.grid.get_neighborhood(i, moore=False, include_center=False)
-        #         for j in next:
-        #             if j in self.walked and j not in paths.keys():
-        #                 paths[j] = [i, x]
-        # shortpath = [camploc]
-        # prev = paths[camploc][0]
-        # while prev:
-        #     print('in prev loop')
-        #     shortpath.append(prev)
-        #     prev = paths[prev][0]
-        # print('dit is pad')
-        # print(shortpath)
-        # self.model.grid.move_agent(self, shortpath[-2])
-        # # camploc = (0, 0)
-        # # neighbors = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
-        # # selfdist = abs(camploc[0]-self.pos[0]) + abs(camploc[1]-self.pos[1])
-        # # mindist = [selfdist, self.pos]
-        # # for i in self.walked:
-        # #     if i in neighbors:
-        # #         curdist = abs(camploc[0]-i[0]) + abs(camploc[1]-i[1])
-        # #         if curdist < mindist[0]:
-        # #             mindist = [curdist, i]
-        # #
-        # # self.model.grid.move_agent(self, mindist[1])
-
         """
         Uses shortest path alg to return to base to return patient
         :return:
