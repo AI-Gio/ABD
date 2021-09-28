@@ -11,6 +11,7 @@ class Medic(Agent):
         self.brancard = []
         self.path = []
         self.known_p = []
+        self.emotional_state = 100
         # hier word coords opgeslagen van onderweg gevonden patients en dan met walk gaat de medic daar bij de volgende stap ernaartoe
 
     def inspect(self, patient):
@@ -53,28 +54,19 @@ class Medic(Agent):
         Medic walks straight to a coordinate
         :return:
         """
-        if self.pos[0] != point[0]:
-            if point[0] - self.pos[0] > 0 and (self.pos[0] + 1, self.pos[1]) in self.path: #naar rechts moet en op pad
-                self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1]))
-            elif point[0] - self.pos[0] < 0 and (self.pos[0] - 1, self.pos[1]) in self.path:#naar links moet en op pad
-                self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1]))
-            elif point[1] - self.pos[1] > 0 and (self.pos[0], self.pos[1] + 1) in self.path:#naar boven moet en op pad
-                self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1] + 1))
-            elif point[1] - self.pos[1] < 0 and (self.pos[0], self.pos[1] - 1) in self.path:#naar onder moet en op pad
-                self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1] - 1))
-
-            elif point[0] - self.pos[0] > 0 and (self.pos[0] + 1, self.pos[1]) in self.path: #naar rechts moet
-                self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1]))
-            elif point[0] - self.pos[0] < 0 and (self.pos[0] - 1, self.pos[1]) in self.path:#naar links moet
-                self.model.grid.move_agent(self, (self.pos[0] - 1, self.pos[1]))
-            elif point[1] - self.pos[1] > 0 and (self.pos[0], self.pos[1] + 1) in self.path:#naar boven moet
-                self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1] + 1))
-            elif point[1] - self.pos[1] < 0 and (self.pos[0], self.pos[1] - 1) in self.path:#naar onder moet
-                self.model.grid.move_agent(self, (self.pos[0] + 1, self.pos[1] - 1))
-        # x, y = self.pos
-
-
-        # todo: medic loopt ergens naar een punt straight toe
+        x, y = self.pos
+        if x > point[0]:
+            # moet naar links
+            self.model.grid.move_agent(self, (x-1,y))
+        elif x < point[0]:
+            # moet naar rechts
+            self.model.grid.move_agent(self, (x+1, y))
+        elif y > point[1]:
+            # naar beneden
+            self.model.grid.move_agent(self, (x, y-1))
+        elif y < point[1]:
+            # naar boven
+            self.model.grid.move_agent(self, (x, y+1))
 
     def pickupPatient(self, patient):
         """
@@ -96,34 +88,39 @@ class Medic(Agent):
         elif self.pos[1] > 0:
             self.model.grid.move_agent(self, (x,y-1))
 
-
     def step(self):
         """
         Searches for patients and bring them back decided by calculations
         """
         # todo: keuze gemaakt worden of patient terug gebracht word of niet
         # every interaction is going to be coded here
-        cell_cross = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False)
+        cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False) # coords
+        cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
         own_cell = self.model.grid.get_cell_list_contents([self.pos])
-
         patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
         medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
 
-        if len(patient) > 0 and len(self.brancard) == 0:
+        if len(patient) > 0 and len(self.brancard) == 0: # als er een patient om medic heen staat en de brancard is leeg
             self.pickupPatient(patient[0])
+            if self.known_p != []:
+                for i, p in enumerate(self.known_p):
+                    if patient[0] == p[1]:
+                        self.known_p.pop(i)
             patient.pop(0)
-        if len(patient) > 0 and len(self.brancard) > 0:
+
+        if len(patient) > 0 and len(self.brancard) > 0: # als er een patient om medic heen staat en de brancard is vol
             for p in patient:
-                self.known_p.append(p.pos)
+                if p.pos not in self.known_p:
+                    self.known_p.append((p.pos, p))
             print(self.known_p)
 
-        if len(medcamp) > 0:
+        if len(medcamp) > 0: # als medic op medcamp staat word brancard geleegd
             self.brancard = []
 
         nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
         self.path.extend(nb_coords)
 
-        if len(self.brancard) > 0:
+        if len(self.brancard) > 0: # als de brancard vol is
             self.goBase()
             self.brancard[0].healthReduce()
             if self.brancard[0].health == 0:
@@ -131,10 +128,10 @@ class Medic(Agent):
                 self.brancard = []
                 self.wander(nb_coords)
 
-        elif len(self.known_p) > 0: # errorrrr
-            self.walk(self.known_p[0])
+        elif len(self.known_p) > 0: # als er locaties van patient zijn onthouden
+            self.walk(self.known_p[0][0])
 
-        if len(self.brancard) == 0 and len(self.known_p) == 0:
+        if len(self.brancard) == 0 and len(self.known_p) == 0: # als brancard leeg is en er zijn geen bekende plekken van patienten
             self.wander(nb_coords)
 
 
@@ -155,9 +152,9 @@ class Patient(Agent):
     def createHealth(self, gridSize:list):
         healthChart = [100, 80, 60, 40, 20]
         if gridSize[0] > gridSize[1]:
-            self.health = gridSize[0] / 100 * healthChart[self.severity-1]
+            self.health = gridSize[0] / 50 * healthChart[self.severity-1]
         else:
-            self.health = gridSize[1] / 100 * healthChart[self.severity-1]
+            self.health = gridSize[1] / 50 * healthChart[self.severity-1]
 
     def healthReduce(self):
         if self.health > 0:
