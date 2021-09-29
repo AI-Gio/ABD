@@ -14,6 +14,7 @@ class Medic(Agent):
         self.known_p = []
         self.walked = [(0, 0), (0, 1), (1, 0)]  # known locations (every walked loc + their surroundings)
         self.current_path = ()
+        self.previous_location = None
     def inspect(self):
         """
         Medic inspects patient how severe the situation is and decides then what to do next
@@ -25,27 +26,36 @@ class Medic(Agent):
     def wander_choice_maker(self, locations, counter=0):
         choices = {}
         for pos in locations:
+            print(list(pos)[-1])
             sur = self.model.grid.get_neighborhood(list(pos)[-1], moore=False, include_center=False)
+            if self.previous_location in sur and len(sur) > 1:
+                sur.remove(self.previous_location)
             for loc in sur:
+                if loc in pos:
+                    continue
                 sursuround = self.model.grid.get_neighborhood(loc, moore=False, include_center=True)
                 score = 0
                 for surloc in sursuround:
                     if surloc not in self.walked:
                         score += 1
+
                 path = list(pos)
                 path.append(loc)
                 choices[tuple(path)] = score
 
+
         possible_choices = [k for k, v in choices.items() if v == max(choices.values())]
 
-        if (len(possible_choices) > 1 and counter < 10) and max(choices.values()) < 4:
+        if (len(possible_choices) > 1 and counter < 3) and max(choices.values()) < 1:
             possible_choices = self.wander_choice_maker(possible_choices, counter+1)
+
         return possible_choices
 
     def wander(self):
         """
         Medic wanders through field mostly away from base and tries to explore yet haven't found locations
         """
+
         if len(self.current_path) < 1:
             # get all best choices, shuffle and pick one randomly
             original_path = [[]]
@@ -53,6 +63,7 @@ class Medic(Agent):
             possible_choices = self.wander_choice_maker(original_path)
             self.current_path = list(random.choice(possible_choices)[1::])
 
+        self.previous_location = self.pos
         self.model.grid.move_agent(self, self.current_path[0])
         # add new locations to database of known locations
         new_loc = self.model.grid.get_neighborhood(self.current_path[0], moore=False, include_center=True)
@@ -163,21 +174,20 @@ class Medic(Agent):
         """
         # todo: medic neemt zoiezo patient mee en als patient dood gaat onderweg dan gaat zijn emotianal_staat naar beneden
         # todo: als patient doodgaat onderweg word hij misschien wel of niet meegenomen naar medcamp
-        print(self.brancard)
         # if len(self.brancard) > 0:
         #     self.goBase()
         #
         # else:
         #     pass
-
+        if self.model.height * self.model.width == len(self.walked):
+            print("Simulation has ended.")
+            quit()
         nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
 
         self.path.extend(nb_coords)
 
         cell_cross = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False)
-        # print(cell_cross)
         own_cell = self.model.grid.get_cell_list_contents([self.pos])
-        print(own_cell)
 
         patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
         medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
