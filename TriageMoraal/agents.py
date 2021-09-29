@@ -29,7 +29,9 @@ class Medic(Agent):
         choices = {}
         for pos in locations:
             print(list(pos)[-1])
-            sur = self.model.grid.get_neighborhood(list(pos)[-1], moore=False, include_center=False)
+            surraw = [(list(pos)[-1][0], list(pos)[-1][1]+1), (list(pos)[-1][0], list(pos)[-1][1]-1),
+                      (list(pos)[-1][0]+1, list(pos)[-1][1]), (list(pos)[-1][0]-1, list(pos)[-1][1])]
+            sur = [i for i in surraw if (0 <= i[0] < self.model.width) and (0 <= i[1] < self.model.height)]
             if self.previous_location in sur and len(sur) > 1:
                 sur.remove(self.previous_location)
             for loc in sur:
@@ -79,6 +81,9 @@ class Medic(Agent):
         :return:
         """
         self.current_path = ()
+        for loc in self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False):
+            if loc not in self.walked:
+                self.walked.append(loc)
         opened = [[self.pos, None, 0, 0]]
         closed = []
         paths = {}
@@ -103,7 +108,7 @@ class Medic(Agent):
                 break
 
             curcor = curnode[0]
-            next = self.model.grid.get_neighborhood(curcor, moore=False, include_center=False)
+            next = [(curcor[0], curcor[1]+1), (curcor[0], curcor[1]-1), (curcor[0]+1, curcor[1]), (curcor[0]-1, curcor[1])]
             for j in next:
                 if j in self.walked and j not in paths.keys():
                     destdist = abs(j[0] - destination[0]) ** 2 + abs(j[1] - destination[1]) ** 2
@@ -112,7 +117,6 @@ class Medic(Agent):
                         if k[0] == nextnode[0] and k[-2] < nextnode[-2]:
                             continue
                     opened.append(nextnode)
-    print("Ik heb geen route kunnen brekenen")
         # todo: medic loopt ergens naar een punt straight toe
 
     def pickupPatient(self, patient):
@@ -130,6 +134,9 @@ class Medic(Agent):
     def goBase(self):
         camploc = (0, 0)
         self.current_path = ()
+        for loc in self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False):
+            if loc not in self.walked:
+                self.walked.append(loc)
         opened = [[self.pos, None, 0, 0]]
         closed = []
         paths = {}
@@ -149,12 +156,11 @@ class Medic(Agent):
                 while prev:
                     shortpath.append(prev)
                     prev = paths[prev][0]
-                print(shortpath)
                 self.model.grid.move_agent(self, shortpath[-2])
                 break
 
             curcor = curnode[0]
-            next = self.model.grid.get_neighborhood(curcor, moore=False, include_center=False)
+            next = [(curcor[0], curcor[1]+1), (curcor[0], curcor[1]-1), (curcor[0]+1, curcor[1]), (curcor[0]-1, curcor[1])]
             for j in next:
                 if j in self.walked and j not in paths.keys():
                     destdist = abs(j[0] - camploc[0]) ** 2 + abs(j[1] - camploc[1]) ** 2
@@ -180,7 +186,7 @@ class Medic(Agent):
             print("Medic is traumatized")
             quit()
 
-        if self.model.height * self.model.width == len(self.walked):
+        if self.model.height * self.model.width == len(self.walked) and self.brancard == [] and self.known_p == []:
             print("Simulation has ended.")
             quit()
         nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False)
@@ -196,6 +202,7 @@ class Medic(Agent):
         if len(medcamp) > 0 and len(self.brancard) > 0:
             medcamp[0].saved_patients.append(self.brancard[0])
             self.brancard = []
+            print('patient gedropt')
 
         if len(patient) > 0:
             if len(self.brancard) > 0:
