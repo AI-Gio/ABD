@@ -26,6 +26,7 @@ class Medic(Agent):
             self.emotional_state = self.emotional_state - 20
             # print("Let's help this guy out of his misery...")
             print("Medic: Omae wa mou, shindeiru\nPatient: NANI???\n*Patient died*")
+            patient.health = 0
             patient.dead = True
             # self.model.grid.remove_agent(patient)
         elif patient.dead == False:
@@ -100,7 +101,7 @@ class Medic(Agent):
         if self.emotional_state <= 0:
             print(f"Medic is traumatized")
             quit()
-        cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False) # coords
+        cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
         cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
         own_cell = self.model.grid.get_cell_list_contents([self.pos])
         patient = [obj for obj in cell_cross if isinstance(obj, Patient)]

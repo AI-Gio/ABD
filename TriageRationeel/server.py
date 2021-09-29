@@ -29,6 +29,7 @@ def sim_portrayal(agent):
 
 
     elif type(agent) is Patient:
+        portrayal["id"] = Patient.__getattribute__(agent, 'unique_id')
         if agent.dead:
             portrayal["text"] = "💀️"
             portrayal["Color"] = "#e3e3e3"
@@ -41,7 +42,7 @@ def sim_portrayal(agent):
     elif type(agent) is MedCamp:
         portrayal["text"] = "🏥"
         portrayal["Color"] = "#ff9e9e"
-        portrayal["Saved Patients"] = len(MedCamp.saved_patients)
+        portrayal["Saved Patients"] = len(MedCamp.__getattribute__(agent, 'saved_patients'))
 
     return portrayal
 
