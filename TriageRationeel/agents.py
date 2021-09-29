@@ -22,14 +22,13 @@ class Medic(Agent):
         :return:
         """
         print('Patient ' + str(patient.unique_id) + ': ' + str(patient.health) + "hp")
-        if self.pos[0] + self.pos[1] >= patient.health:
+        if self.pos[0] + self.pos[1] >= patient.health and patient.dead == False:
             self.emotional_state = self.emotional_state - 20
             # print("Let's help this guy out of his misery...")
             print("Medic: Omae wa mou, shindeiru\nPatient: NANI???\n*Patient died*")
             patient.dead = True
             # self.model.grid.remove_agent(patient)
-
-        else:
+        elif patient.dead == False:
             print("Come. this is no place to die")
             self.brancard.append(patient)
             self.pickedup = True
