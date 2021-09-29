@@ -110,7 +110,6 @@ class Medic(Agent):
                         if k[0] == nextnode[0] and k[-2] < nextnode[-2]:
                             continue
                     opened.append(nextnode)
-        pass
         # todo: medic loopt ergens naar een punt straight toe
 
     def pickupPatient(self, patient):

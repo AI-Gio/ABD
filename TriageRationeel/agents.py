@@ -35,10 +35,6 @@ class Medic(Agent):
             self.pickedup = True
             self.model.grid.remove_agent(patient)
 
-
-            # todo: hier komt assesment of patient meegenomen moet worden terug naar kamp of niet
-        pass
-
     def wander(self, surround):
         """
         Medic wanders through field mostly away from base and tries to explore yet haven't found locations
@@ -62,7 +58,7 @@ class Medic(Agent):
         new_loc = self.model.grid.get_neighborhood(choice, moore=False, include_center=True)
         self.path = self.path + list(set(new_loc) - set(self.path))  # removes duplicates
 
-    def walk(self, point): # point = (3,3)
+    def walk(self, point):
         """
         Medic walks straight to a coordinate
         :return:
@@ -83,20 +79,15 @@ class Medic(Agent):
 
     def pickupPatient(self, patient):
         """
-        Medic picks up patient from field
+        Medic inpsects patient and (possibly) picks up patient from field
         """
-        # todo: patient word opgepakt en toegevoegd aan brancard
-        # patient.health = 5
         self.inspect(patient)
-
-        # self.model.grid.remove_agent(patient)    # not sure if patient is still in schedule after removing
 
     def goBase(self):
         """
         Uses shortest path alg to return to base to return patient
         :return:
         """
-        # todo: Medic gaat meteen met shortest path naar medcamp
         x, y = self.pos
         if self.pos[0] > 0:
             self.model.grid.move_agent(self, (x-1,y))
@@ -107,8 +98,9 @@ class Medic(Agent):
         """
         Searches for patients and bring them back decided by calculations
         """
-        # todo: keuze gemaakt worden of patient terug gebracht word of niet
-        # every interaction is going to be coded here
+        if self.emotional_state <= 0:
+            print(f"Medic is traumatized")
+            quit()
         cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False) # coords
         cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
         own_cell = self.model.grid.get_cell_list_contents([self.pos])
@@ -125,11 +117,11 @@ class Medic(Agent):
 
         if len(patient) > 0 and len(self.brancard) > 0: # als er een patient om medic heen staat en de brancard is vol
             for p in patient:
-                if p.pos not in self.known_p:
+                if p.pos not in [p[0] for p in self.known_p]:
                     self.known_p.append((p.pos, p))
-            print(self.known_p)
 
-        if len(medcamp) > 0: # als medic op medcamp staat word brancard geleegd
+        if len(medcamp) > 0 and len(self.brancard) > 0: # als medic op medcamp staat word brancard geleegd
+            medcamp[0].saved_patients.append(self.brancard[0])
             self.brancard = []
             self.pickedup = False
 
@@ -163,8 +155,6 @@ class Patient(Agent):
         self.severity = random.randint(1, 5)
         self.dead = False
 
-        # todo: patient heeft een type severity en met die severity krijgt hij ook een health (prob met formule)
-
     def step(self):
         pass
 
@@ -188,9 +178,10 @@ class MedCamp(Agent):
     """
     MedCamp is where Medic will start from and go to, to retrieve Patient
     """
-    # todo: here are the patients being counted that are retrieved so that you can hover over medcamp in sim and see that number
+    saved_patients = []
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
+
 
     def step(self):
         pass
