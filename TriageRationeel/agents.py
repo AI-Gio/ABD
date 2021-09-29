@@ -149,10 +149,10 @@ class Patient(Agent):
     """
     Person that is stuck somewhere in the field after a disaster
     """
-    health = 100
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.severity = random.randint(1, 5)
+        self.health = 100
         self.dead = False
 
     def step(self):

@@ -15,6 +15,8 @@ class Medic(Agent):
         self.walked = [(0, 0), (0, 1), (1, 0)]  # known locations (every walked loc + their surroundings)
         self.current_path = ()
         self.previous_location = None
+        self.emotional_state = 100
+
     def inspect(self):
         """
         Medic inspects patient how severe the situation is and decides then what to do next
@@ -173,11 +175,10 @@ class Medic(Agent):
         """
         # todo: medic neemt zoiezo patient mee en als patient dood gaat onderweg dan gaat zijn emotianal_staat naar beneden
         # todo: als patient doodgaat onderweg word hij misschien wel of niet meegenomen naar medcamp
-        # if len(self.brancard) > 0:
-        #     self.goBase()
-        #
-        # else:
-        #     pass
+        if self.emotional_state <= 0:
+            print("Medic is traumatized")
+            quit()
+
         if self.model.height * self.model.width == len(self.walked):
             print("Simulation has ended.")
             quit()
@@ -191,11 +192,7 @@ class Medic(Agent):
         patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
         medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
 
-        # if len(patient) > 0:
-        #     print('ik pak een patient op')
-        #     self.pickupPatient(cell_cross[0])
         if len(medcamp) > 0:
-            print('op camp')
             self.brancard = []
 
         if len(patient) > 0:
@@ -210,29 +207,47 @@ class Medic(Agent):
                         self.known_p.append(p)
                 self.pickupPatient(patient[0])
             else:
-                print('ik pak een patient op')
                 self.pickupPatient(patient[0])
         elif len(self.brancard) > 0:
             print('ben niet bij camp maar heb patient')
             self.goBase()
+            self.brancard[0].healthReduce()
+            if self.brancard[0].health == 0:
+                print("Patient died")
+                self.brancard = []
+                self.emotional_state -= 10
+
         elif len(self.known_p) > 0:
             self.walk(self.known_p[0].pos)
         else:
             self.wander()
 
 
-
 class Patient(Agent):
     """
     Person that is stuck somewhere in the field after a disaster
     """
+    health = 100
     def __int__(self, unique_id, model, severity: int):
         super().__init__(unique_id, model)
-        self.severity = severity
-        # todo: patient heeft een type severity en met die severity krijgt hij ook een health (prob met formule)
+        self.severity = random.randint(1, 5)
 
     def step(self):
         pass
+
+    def createHealth(self, gridSize:list):
+        healthChart = [100, 80, 60, 40, 20]
+        if gridSize[0] > gridSize[1]:
+            self.health = gridSize[0] / 50 * healthChart[self.severity-1]
+        else:
+            self.health = gridSize[1] / 50 * healthChart[self.severity-1]
+
+    def healthReduce(self):
+        if self.health > 0:
+            self.health = self.health - 1
+        else:
+            print("Haha Man I'm dead")
+            # self.dead = True
 
 class MedCamp(Agent):
     """

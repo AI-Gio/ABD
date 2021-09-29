@@ -17,7 +17,7 @@ def sim_portrayal(agent):
 
     if type(agent) is Medic:
         if agent.pickedup:
-            portrayal["text"] = "⚕"
+            portrayal["text"] = "⚕️"
         else:
             portrayal["text"] = "👨"
         portrayal["Color"] = "#d44e4e"
@@ -30,13 +30,13 @@ def sim_portrayal(agent):
 
     elif type(agent) is Patient:
         if agent.dead:
-            portrayal["text"] = "⚰️"
+            portrayal["text"] = "💀️"
             portrayal["Color"] = "#e3e3e3"
-            portrayal["Health"] = Patient.health
+            portrayal["Health"] = Patient.__getattribute__(agent,'health')
         else:
             portrayal["text"] = "🤕"
             portrayal["Color"] = "#e3e3e3"
-            portrayal["Health"] = Patient.health
+            portrayal["Health"] = Patient.__getattribute__(agent,'health')
 
     elif type(agent) is MedCamp:
         portrayal["text"] = "🏥"
