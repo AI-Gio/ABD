@@ -32,7 +32,7 @@ class Medic(Agent):
         else:
             print("Come. this is no place to die")
             self.brancard.append(patient)
-
+            self.pickedup = True
             self.model.grid.remove_agent(patient)
 
 
@@ -88,7 +88,7 @@ class Medic(Agent):
         # todo: patient word opgepakt en toegevoegd aan brancard
         # patient.health = 5
         self.inspect(patient)
-        self.pickedup = True
+
         # self.model.grid.remove_agent(patient)    # not sure if patient is still in schedule after removing
 
     def goBase(self):
@@ -131,6 +131,7 @@ class Medic(Agent):
 
         if len(medcamp) > 0: # als medic op medcamp staat word brancard geleegd
             self.brancard = []
+            self.pickedup = False
 
         nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
         self.path.extend(nb_coords)
