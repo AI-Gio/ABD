@@ -19,7 +19,8 @@ class Medic(Agent):
         Medic inspects patient how severe the situation is and decides then what to do next
         :return:
         """
-        if self.pos[0] + self.pos[1] > patient.status:
+        if self.pos[0] + self.pos[1] > patient.health:
+            self.emotional_state = self.emotional_state - 20
             print("Fuck this guy")
         else:
             print("Come. this is no place to die")
