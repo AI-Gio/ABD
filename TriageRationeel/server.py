@@ -14,23 +14,24 @@ def sim_portrayal(agent):
                  "Layer":0,
                  "r": 1}
 
-    if agent.dead:
-        portrayal["text"] = "⚰️"
-        portrayal["Color"] = "#e3e3e3"
+    if type(agent) is Medic:
+        if agent.pickedup:
+            portrayal["text"] = "⚕️"
+            portrayal["Color"] = "#d44e4e"
+            portrayal["Layer"] = 5
+        else:
+            portrayal["text"] = "👨"
+            portrayal["Color"] = "#d44e4e"
+            portrayal["Layer"] = 5
 
-    elif agent.pickedup:
-        portrayal["text"] = "⚕️"
-        portrayal["Color"] = "#d44e4e"
-        portrayal["Layer"] = 5
-
-    elif type(agent) is Medic:
-        portrayal["text"] = "👨"
-        portrayal["Color"] = "#d44e4e"
-        portrayal["Layer"] = 5
 
     elif type(agent) is Patient:
-        portrayal["text"] = "🤕"
-        portrayal["Color"] = "#e3e3e3"
+        if agent.dead:
+            portrayal["text"] = "⚰️"
+            portrayal["Color"] = "#e3e3e3"
+        else:
+            portrayal["text"] = "🤕"
+            portrayal["Color"] = "#e3e3e3"
 
     elif type(agent) is MedCamp:
         portrayal["text"] = "🏥"

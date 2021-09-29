@@ -13,7 +13,7 @@ class Medic(Agent):
         self.known_p = []
         self.emotional_state = 100
         self.pickedup = False
-        self.dead = False
+
         # hier word coords opgeslagen van onderweg gevonden patients en dan met walk gaat de medic daar bij de volgende stap ernaartoe
 
     def inspect(self, patient):
@@ -160,7 +160,6 @@ class Patient(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.severity = random.randint(1, 5)
-        self.pickedup = False
         self.dead = False
 
         # todo: patient heeft een type severity en met die severity krijgt hij ook een health (prob met formule)
@@ -191,8 +190,6 @@ class MedCamp(Agent):
     # todo: here are the patients being counted that are retrieved so that you can hover over medcamp in sim and see that number
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
-        self.pickedup = False
-        self.dead = False
 
     def step(self):
         pass
