@@ -3,7 +3,7 @@ from itertools import product
 from mesa.space import MultiGrid
 from mesa import Model
 from mesa.time import SimultaneousActivation
-# from mesa.datacollection import DataCollector
+
 
 from TriageRationeel.agents import *
 

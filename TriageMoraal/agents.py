@@ -112,6 +112,7 @@ class Medic(Agent):
                         if k[0] == nextnode[0] and k[-2] < nextnode[-2]:
                             continue
                     opened.append(nextnode)
+    print("Ik heb geen route kunnen brekenen")
         # todo: medic loopt ergens naar een punt straight toe
 
     def pickupPatient(self, patient):
@@ -192,22 +193,24 @@ class Medic(Agent):
         patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
         medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
 
-        if len(medcamp) > 0:
+        if len(medcamp) > 0 and len(self.brancard) > 0:
+            medcamp[0].saved_patients.append(self.brancard[0])
             self.brancard = []
 
         if len(patient) > 0:
             if len(self.brancard) > 0:
-                for p in range(len(patient)):
+                for p in patient:
                     if p not in self.known_p:
                         self.known_p.append(p)
                 self.goBase()
             elif len(patient) > 1:
                 for p in range(1, len(patient)):
-                    if p not in self.known_p:
-                        self.known_p.append(p)
+                    if patient[p] not in self.known_p:
+                        self.known_p.append(patient[p])
                 self.pickupPatient(patient[0])
             else:
                 self.pickupPatient(patient[0])
+
         elif len(self.brancard) > 0:
             print('ben niet bij camp maar heb patient')
             self.goBase()
@@ -227,10 +230,11 @@ class Patient(Agent):
     """
     Person that is stuck somewhere in the field after a disaster
     """
-    health = 100
-    def __int__(self, unique_id, model, severity: int):
+
+    def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.severity = random.randint(1, 5)
+        self.health = 100
 
     def step(self):
         pass
@@ -247,7 +251,6 @@ class Patient(Agent):
             self.health = self.health - 1
         else:
             print("Haha Man I'm dead")
-            # self.dead = True
 
 class MedCamp(Agent):
     """
@@ -255,7 +258,8 @@ class MedCamp(Agent):
     """
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
-        # todo: here are the patients being counted that are retrieved so that you can hover over medcamp in sim and see that number
+        self.saved_patients = []
+
 
     def step(self):
         pass

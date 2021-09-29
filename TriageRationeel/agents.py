@@ -178,10 +178,9 @@ class MedCamp(Agent):
     """
     MedCamp is where Medic will start from and go to, to retrieve Patient
     """
-    saved_patients = []
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
-
+        self.saved_patients = []
 
     def step(self):
         pass
