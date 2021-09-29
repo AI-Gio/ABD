@@ -14,7 +14,16 @@ def sim_portrayal(agent):
                  "Layer":0,
                  "r": 1}
 
-    if type(agent) is Medic:
+    if agent.dead:
+        portrayal["text"] = "⚰️"
+        portrayal["Color"] = "#e3e3e3"
+
+    elif agent.pickedup:
+        portrayal["text"] = "⚕️"
+        portrayal["Color"] = "#d44e4e"
+        portrayal["Layer"] = 5
+
+    elif type(agent) is Medic:
         portrayal["text"] = "👨"
         portrayal["Color"] = "#d44e4e"
         portrayal["Layer"] = 5

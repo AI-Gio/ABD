@@ -12,6 +12,8 @@ class Medic(Agent):
         self.path = []
         self.known_p = []
         self.emotional_state = 100
+        self.pickedup = False
+        self.dead = False
         # hier word coords opgeslagen van onderweg gevonden patients en dan met walk gaat de medic daar bij de volgende stap ernaartoe
 
     def inspect(self, patient):
@@ -20,15 +22,17 @@ class Medic(Agent):
         :return:
         """
         print('Patient ' + str(patient.unique_id) + ': ' + str(patient.health) + "hp")
-        if self.pos[0] + self.pos[1] > patient.health:
+        if self.pos[0] + self.pos[1] >= patient.health:
             self.emotional_state = self.emotional_state - 20
             # print("Let's help this guy out of his misery...")
             print("Medic: Omae wa mou, shindeiru\nPatient: NANI???\n*Patient died*")
-            self.model.grid.remove_agent(patient)
+            patient.dead = True
+            # self.model.grid.remove_agent(patient)
 
         else:
             print("Come. this is no place to die")
             self.brancard.append(patient)
+
             self.model.grid.remove_agent(patient)
 
 
@@ -84,8 +88,7 @@ class Medic(Agent):
         # todo: patient word opgepakt en toegevoegd aan brancard
         # patient.health = 5
         self.inspect(patient)
-
-        # self.brancard.append(patient)
+        self.pickedup = True
         # self.model.grid.remove_agent(patient)    # not sure if patient is still in schedule after removing
 
     def goBase(self):
@@ -139,12 +142,14 @@ class Medic(Agent):
                 print("Patient died")
                 self.brancard = []
                 self.wander(nb_coords)
+                self.pickedup = False
 
         elif len(self.known_p) > 0: # als er locaties van patient zijn onthouden
             self.walk(self.known_p[0][0])
 
         if len(self.brancard) == 0 and len(self.known_p) == 0: # als brancard leeg is en er zijn geen bekende plekken van patienten
             self.wander(nb_coords)
+            self.pickedup = False
 
 
 class Patient(Agent):
@@ -155,6 +160,8 @@ class Patient(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.severity = random.randint(1, 5)
+        self.pickedup = False
+        self.dead = False
 
         # todo: patient heeft een type severity en met die severity krijgt hij ook een health (prob met formule)
 
@@ -173,7 +180,9 @@ class Patient(Agent):
             self.health = self.health - 1
         else:
             print("Haha Man I'm dead")
-            self.model.grid.remove_agent(self)
+            self.dead = True
+            # self.model.grid.remove_agent(self)
+
 
 class MedCamp(Agent):
     """
@@ -182,6 +191,8 @@ class MedCamp(Agent):
     # todo: here are the patients being counted that are retrieved so that you can hover over medcamp in sim and see that number
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
+        self.pickedup = False
+        self.dead = False
 
     def step(self):
         pass
