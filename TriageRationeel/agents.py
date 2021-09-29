@@ -19,12 +19,20 @@ class Medic(Agent):
         Medic inspects patient how severe the situation is and decides then what to do next
         :return:
         """
+        print('Patient ' + str(patient.unique_id) + ': ' + str(patient.health) + "hp")
         if self.pos[0] + self.pos[1] > patient.health:
             self.emotional_state = self.emotional_state - 20
-            print("Fuck this guy")
+            # print("Let's help this guy out of his misery...")
+            print("Medic: Omae wa mou, shindeiru\nPatient: NANI???\n*Patient died*")
+            self.model.grid.remove_agent(patient)
+
         else:
             print("Come. this is no place to die")
-        # todo: hier komt assesment of patient meegenomen moet worden terug naar kamp of niet
+            self.brancard.append(patient)
+            self.model.grid.remove_agent(patient)
+
+
+            # todo: hier komt assesment of patient meegenomen moet worden terug naar kamp of niet
         pass
 
     def wander(self, surround):
@@ -74,8 +82,11 @@ class Medic(Agent):
         Medic picks up patient from field
         """
         # todo: patient word opgepakt en toegevoegd aan brancard
-        self.brancard.append(patient)
-        self.model.grid.remove_agent(patient)    # not sure if patient is still in schedule after removing
+        # patient.health = 5
+        self.inspect(patient)
+
+        # self.brancard.append(patient)
+        # self.model.grid.remove_agent(patient)    # not sure if patient is still in schedule after removing
 
     def goBase(self):
         """
@@ -162,6 +173,7 @@ class Patient(Agent):
             self.health = self.health - 1
         else:
             print("Haha Man I'm dead")
+            self.model.grid.remove_agent(self)
 
 class MedCamp(Agent):
     """
