@@ -45,7 +45,6 @@ class Medic(Agent):
     def wander_choice_maker(self, locations, counter=0):
         choices = {}
         for pos in locations:
-            print(list(pos)[-1])
             surraw = [(list(pos)[-1][0], list(pos)[-1][1]+1), (list(pos)[-1][0], list(pos)[-1][1]-1),
                       (list(pos)[-1][0]+1, list(pos)[-1][1]), (list(pos)[-1][0]-1, list(pos)[-1][1])]
             sur = [i for i in surraw if (0 <= i[0] < self.model.width) and (0 <= i[1] < self.model.height)]
@@ -127,6 +126,7 @@ class Medic(Agent):
         """
         if self.emotional_state <= 0:
             print(f"Medic is traumatized")
+            quit()
 
         cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
         cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
@@ -162,7 +162,6 @@ class Medic(Agent):
 
         if len(self.brancard) > 0: # als de brancard vol is
             self.goBase()
-            self.brancard[0].healthReduce()
             if self.brancard[0].health == 0:
                 print("Patient died")
                 self.brancard = []
@@ -177,6 +176,7 @@ class Medic(Agent):
             self.pickedup = False
 
 
+
 class Patient(Agent):
     """
     Person that is stuck somewhere in the field after a disaster
@@ -188,7 +188,7 @@ class Patient(Agent):
         self.dead = False
 
     def step(self):
-        pass
+        self.healthReduce()
 
     def createHealth(self, gridSize:list):
         healthChart = [100, 80, 60, 40, 20]
@@ -199,9 +199,9 @@ class Patient(Agent):
 
     def healthReduce(self):
         if self.health > 0:
-            self.health = self.health - 1
+            self.health = self.health + (self.health - 100) / ((self.health - (self.health - 100)) * 10)
         else:
-            print("Haha Man I'm dead")
+            # print("Haha Man I'm dead")
             self.dead = True
 
 
