@@ -46,6 +46,7 @@ def sim_portrayal(agent):
 
     return portrayal
 
+
 sim = CanvasGrid(sim_portrayal, 20, 20, 500, 500)
 model_params = {
     "init_patient":UserSettableParameter("slider", "Init_patients", value=2,

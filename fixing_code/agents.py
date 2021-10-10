@@ -1,5 +1,6 @@
 from mesa import Agent
 import random
+import time
 
 class Medic(Agent):
     """
@@ -15,6 +16,13 @@ class Medic(Agent):
         self.previous_location = None
         self.emotional_state = 100
         self.pickedup = False
+
+    def move_agent(self, location):
+        self.previous_location = self.pos
+        self.model.grid.move_agent(self, location)
+        new_loc = self.model.grid.get_neighborhood(location, moore=False, include_center=True)
+        self.path = self.path + (list(set(new_loc) - set(self.path)))  # removes duplicates
+
 
     def inspect(self, patient):
         """
@@ -66,15 +74,32 @@ class Medic(Agent):
 
         possible_choices = [k for k, v in choices.items() if v == max(choices.values())]
 
-        if (len(possible_choices) > 1 and counter < 3) and max(choices.values()) < 1:
+        if (len(possible_choices) > 1 and counter < 3) and max(choices.values()) < 4:
             possible_choices = self.wander_choice_maker(possible_choices, counter+1)
-
+        elif (len(possible_choices) > 1 and counter >= 3) and max(choices.values()) < 4:
+            right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
+            rightcount = len(set(right) - set(self.path))
+            left = [x for x in self.model.grid.empties if x[0] < self.pos[0]]
+            leftcount = len(set(left) - set(self.path))
+            up = [x for x in self.model.grid.empties if x[1] > self.pos[1]]
+            upcount = len(set(up) - set(self.path))
+            down = [x for x in self.model.grid.empties if x[1] < self.pos[1]]
+            downcount = len(set(down) - set(self.path))
+            count_list = [rightcount, leftcount, upcount, downcount]
+            max_index = count_list.index(max(count_list))
+            return {
+                0: [(self.pos, (self.pos[0] + 1, self.pos[1]))],
+                1: [(self.pos, (self.pos[0] - 1, self.pos[1]))],
+                2: [(self.pos, (self.pos[0], self.pos[1] + 1))],
+                3: [(self.pos, (self.pos[0], self.pos[1] - 1))],
+                }.get(max_index)
         return possible_choices
 
     def wander(self):
         """
         Medic wanders through field mostly away from base and tries to explore yet haven't found locations
         """
+
         if len(self.current_path) < 1:
             # get all best choices, shuffle and pick one randomly
             original_path = [[]]
@@ -82,11 +107,7 @@ class Medic(Agent):
             possible_choices = self.wander_choice_maker(original_path)
             self.current_path = list(random.choice(possible_choices)[1::])
 
-        self.previous_location = self.pos
-        self.model.grid.move_agent(self, self.current_path[0])
-        # add new locations to database of known locations
-        new_loc = self.model.grid.get_neighborhood(self.current_path[0], moore=False, include_center=True)
-        self.path = self.path + list(set(new_loc) - set(self.path))  # removes duplicates
+        self.move_agent(self.current_path[0])
         del self.current_path[0]
 
     def walk(self, point):
@@ -97,16 +118,16 @@ class Medic(Agent):
         x, y = self.pos
         if x > point[0]:
             # moet naar links
-            self.model.grid.move_agent(self, (x-1,y))
+            self.move_agent((x-1,y))
         elif x < point[0]:
             # moet naar rechts
-            self.model.grid.move_agent(self, (x+1, y))
+            self.move_agent((x + 1, y))
         elif y > point[1]:
             # naar beneden
-            self.model.grid.move_agent(self, (x, y-1))
+            self.move_agent((x, y-1))
         elif y < point[1]:
             # naar boven
-            self.model.grid.move_agent(self, (x, y+1))
+            self.move_agent((x, y+1))
 
     def goBase(self):
         """
@@ -116,9 +137,9 @@ class Medic(Agent):
         self.current_path = ()
         x, y = self.pos
         if self.pos[0] > 0:
-            self.model.grid.move_agent(self, (x-1,y))
+            self.move_agent((x - 1, y))
         elif self.pos[1] > 0:
-            self.model.grid.move_agent(self, (x,y-1))
+            self.move_agent((x,y-1))
 
     def step(self):
         """
@@ -127,6 +148,15 @@ class Medic(Agent):
         if self.emotional_state <= 0:
             print(f"Medic is traumatized")
             quit()
+
+        if self.model.height * self.model.width == len(self.path) and self.brancard == [] and self.known_p == []:
+            print("Simulation has ended.")
+            quit()
+
+        print("grid:{}, walked path:{}".format(self.model.height * self.model.width, len(self.path)))
+        print(len(self.model.grid.empties))
+
+
 
         cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
         cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
@@ -158,7 +188,6 @@ class Medic(Agent):
             self.pickedup = False
 
         nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
-        self.path.extend(nb_coords)
 
         if len(self.brancard) > 0: # als de brancard vol is
             self.goBase()
