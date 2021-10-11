@@ -218,10 +218,22 @@ class Patient(Agent):
 
     def createHealth(self, gridSize:list):
         healthChart = [100, 80, 60, 40, 20]
-        if gridSize[0] > gridSize[1]:
-            self.health = gridSize[0] / 50 * healthChart[self.severity-1]
-        else:
-            self.health = gridSize[1] / 50 * healthChart[self.severity-1]
+        healthScale = random.choice(healthChart)
+        #now we finetune it with a std to make it unpredictable
+        sizeSteps = 20
+        global sizeSteps
+        amountSteps = 4
+        std = sizeSteps/amountSteps
+        self.health = round(np.random.normal(healthScale, std, 1)[0])
+        self.externHealth = healthScale #this number is the approximate health that the doctor knows
+
+
+        # if gridSize[0] > gridSize[1]:
+        #     self.health = gridSize[0] / 50 * healthChart[self.severity-1]
+        # else:
+        #     self.health = gridSize[1] / 50 * healthChart[self.severity-1]
+        # self.health = randomHealth
+        print(self.health)
 
     def healthReduce(self):
         if self.health > 0:
