@@ -316,30 +316,43 @@ class Scout(Agent):
             #     }.get(max_index)
         return possible_choices
 
+    def goBase(self):
+        """
+        Uses shortest path alg to return to base to return patient
+        :return:
+        """
+        self.current_path = ()
+        x, y = self.pos
+        if self.pos[0] > 0:
+            self.move_agent((x - 1, y))
+        elif self.pos[1] > 0:
+            self.move_agent((x,y-1))
+
     def step(self):
-        cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
-        cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
-        own_cell = self.model.grid.get_cell_list_contents([self.pos])
-        patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
-        medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
+        for x in range (2):
+            cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
+            cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
+            own_cell = self.model.grid.get_cell_list_contents([self.pos])
+            patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
+            medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
 
-        if self.amount_found_p >= 5:
-            self.gobase
+            if self.amount_found_p >= 5:
+                self.gobase
 
-        elif len(patient) == 0:
-            self.wander()
+            elif len(patient) == 0:
+                self.wander()
 
-        elif len(patient) > 0:
-            for p in patient:
-                if p.pos not in [p[1] for p in self.found_p]:
-                    if p.pos is None:
-                        print(p.unique_id)
-                    if not p.dead:
-                        self.found_p.append((p.pos, p))
-                        self.amount_found_p = self.amount_found_p + 1
+            elif len(patient) > 0:
+                for p in patient:
+                    if p.pos not in [p[1] for p in self.found_p]:
+                        if p.pos is None:
+                            print(p.unique_id)
+                        if not p.dead:
+                            self.found_p.append((p.pos, p))
+                            self.amount_found_p = self.amount_found_p + 1
 
-        elif len(medcamp) == 1:
-            pass
+            elif len(medcamp) == 1:
+                pass
 
 
 class MedCamp(Agent):
