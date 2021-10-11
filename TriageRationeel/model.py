@@ -12,7 +12,7 @@ class Triage(Model):
     Simulation of Triage
     """
     # hier worden alle agents aangemaakt en geplaatst en grid aangemaakt
-    def __init__(self, width=20, height=20, init_medic=1, init_patient=9):
+    def __init__(self, width=20, height=20, init_medic=1, init_patient=9, init_scouts=1):
         self.width = width
         self.height = height
 
@@ -22,16 +22,23 @@ class Triage(Model):
 
         medic_poss = []
         for m in range(init_medic):
-            medic = Medic(0, self)
+            medic = Medic(m, self)
             medic_poss.append((0,0))
             self.grid.place_agent(medic, (0,0))
             self.schedule.add(medic)
+
+        scout_poss = []
+        for s in range(init_scouts):
+            scout = Scout(s+10, self)
+            scout_poss.append((0,0))
+            self.grid.place_agent(scout, (1,1))
+            self.schedule.add(scout)
 
         total_a = init_patient
         coords = sample(list(product(range(1,width), repeat=2)), k=init_patient) #bron: https://stackoverflow.com/questions/60641177/how-do-i-make-a-list-of-random-unique-tuples
 
         for p in range(init_patient):
-            patient = Patient(p+1, self)
+            patient = Patient(p+20, self)
             patient.createHealth([width, height])
             self.grid.place_agent(patient, coords[0])
             coords.pop(0)

@@ -221,7 +221,6 @@ class Patient(Agent):
         healthScale = random.choice(healthChart)
         #now we finetune it with a std to make it unpredictable
         sizeSteps = 20
-        global sizeSteps
         amountSteps = 4
         std = sizeSteps/amountSteps
         self.health = round(np.random.normal(healthScale, std, 1)[0])
@@ -247,6 +246,75 @@ class Scout(Agent):
         super().__init__(unique_id, model)
         self.found_p = []
         self.path = []
+        self.amount_found_p = 0
+        self.current_path = ()
+        self.previous_location = None
+
+    def move_agent(self, location):
+        self.previous_location = self.pos
+        self.model.grid.move_agent(self, location)
+        new_loc = self.model.grid.get_neighborhood(location, moore=False, include_center=True)
+        self.path = self.path + (list(set(new_loc) - set(self.path)))  # removes duplicates
+
+    def wander(self):
+        """
+        Scout wanders through field mostly away from base and tries to explore yet haven't found locations
+        """
+
+        if len(self.current_path) < 1:
+            # get all best choices, shuffle and pick one randomly
+            original_path = [[]]
+            original_path[0].append(self.pos)
+            possible_choices = self.wander_choice_maker(original_path)
+            self.current_path = list(random.choice(possible_choices)[1::])
+
+        self.move_agent(self.current_path[0])
+        del self.current_path[0]
+
+    def wander_choice_maker(self, locations, counter=0):
+        choices = {}
+        for pos in locations:
+            surraw = [(list(pos)[-1][0], list(pos)[-1][1]+1), (list(pos)[-1][0], list(pos)[-1][1]-1),
+                      (list(pos)[-1][0]+1, list(pos)[-1][1]), (list(pos)[-1][0]-1, list(pos)[-1][1])]
+            sur = [i for i in surraw if (0 <= i[0] < self.model.width) and (0 <= i[1] < self.model.height)]
+            if self.previous_location in sur and len(sur) > 1:
+                sur.remove(self.previous_location)
+            for loc in sur:
+                if loc in pos:
+                    continue
+                sursuround = self.model.grid.get_neighborhood(loc, moore=False, include_center=True)
+                score = 0
+                for surloc in sursuround:
+                    if surloc not in self.path:
+                        score += 1
+
+                path = list(pos)
+                path.append(loc)
+                choices[tuple(path)] = score
+
+
+        possible_choices = [k for k, v in choices.items() if v == max(choices.values())]
+
+        if (len(possible_choices) > 1 and counter < 3) and max(choices.values()) < 4:
+            possible_choices = self.wander_choice_maker(possible_choices, counter+1)
+        # elif (len(possible_choices) > 1 and counter >= 3) and max(choices.values()) < 4:
+            # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
+            # rightcount = len(set(right) - set(self.path))
+            # left = [x for x in self.model.grid.empties if x[0] < self.pos[0]]
+            # leftcount = len(set(left) - set(self.path))
+            # up = [x for x in self.model.grid.empties if x[1] > self.pos[1]]
+            # upcount = len(set(up) - set(self.path))
+            # down = [x for x in self.model.grid.empties if x[1] < self.pos[1]]
+            # downcount = len(set(down) - set(self.path))
+            # count_list = [rightcount, leftcount, upcount, downcount]
+            # max_index = count_list.index(max(count_list))
+            # return {
+            #     0: [(self.pos, (self.pos[0] + 1, self.pos[1]))],
+            #     1: [(self.pos, (self.pos[0] - 1, self.pos[1]))],
+            #     2: [(self.pos, (self.pos[0], self.pos[1] + 1))],
+            #     3: [(self.pos, (self.pos[0], self.pos[1] - 1))],
+            #     }.get(max_index)
+        return possible_choices
 
     def step(self):
         cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
@@ -255,7 +323,7 @@ class Scout(Agent):
         patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
         medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
 
-        if self.found_p >= 5:
+        if self.amount_found_p >= 5:
             self.gobase
 
         elif len(patient) == 0:
@@ -268,6 +336,7 @@ class Scout(Agent):
                         print(p.unique_id)
                     if not p.dead:
                         self.found_p.append((p.pos, p))
+                        self.amount_found_p = self.amount_found_p + 1
 
         elif len(medcamp) == 1:
             pass

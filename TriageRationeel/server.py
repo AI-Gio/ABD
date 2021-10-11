@@ -44,6 +44,11 @@ def sim_portrayal(agent):
         portrayal["Color"] = "#ff9e9e"
         portrayal["Saved Patients"] = len(MedCamp.__getattribute__(agent, 'saved_patients'))
 
+    elif type(agent) is Scout:
+        portrayal["text"] = "🏃"
+        portrayal["Color"] = "#d44e4e"
+        portrayal["Emotional state"] = Scout.__getattribute__(agent, 'amount_found_p')
+
     return portrayal
 
 sim = CanvasGrid(sim_portrayal, 20, 20, 500, 500)
