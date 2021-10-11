@@ -49,7 +49,7 @@ def sim_portrayal(agent):
 sim = CanvasGrid(sim_portrayal, 20, 20, 500, 500)
 model_params = {
     "init_patient":UserSettableParameter("slider", "Init_patients", value=2,
-                                     min_value=1, max_value=sim.grid_width*sim.grid_height-(sim.grid_height+sim.grid_width)+1, step=1)
+                                     min_value=1, max_value=sim.grid_width*sim.grid_height-(sim.grid_height+sim.grid_width), step=1)
 }#bron: https://github.com/projectmesa/mesa/issues/419
 
 server = ModularServer(Triage, [sim],
