@@ -242,6 +242,37 @@ class Patient(Agent):
         else:
             self.dead = True
 
+class Scout(Agent):
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+        self.found_p = []
+        self.path = []
+
+    def step(self):
+        cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
+        cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
+        own_cell = self.model.grid.get_cell_list_contents([self.pos])
+        patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
+        medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
+
+        if self.found_p >= 5:
+            self.gobase
+
+        elif len(patient) == 0:
+            self.wander()
+
+        elif len(patient) > 0:
+            for p in patient:
+                if p.pos not in [p[1] for p in self.found_p]:
+                    if p.pos is None:
+                        print(p.unique_id)
+                    if not p.dead:
+                        self.found_p.append((p.pos, p))
+
+        elif len(medcamp) == 1:
+            pass
+
+
 class MedCamp(Agent):
     """
     MedCamp is where Medic will start from and go to, to retrieve Patient
@@ -249,6 +280,7 @@ class MedCamp(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.saved_patients = []
+        self.field = []
 
     def step(self):
         pass
