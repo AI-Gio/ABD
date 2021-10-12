@@ -13,18 +13,18 @@ class Medic(Agent):
     """
     def __init__(self, unique_id, model, mode="None"):
         super().__init__(unique_id, model)
-        self.brancard = []
-        self.path = [(0, 0), (0, 1), (1, 0)]
-        self.known_p = []
+        self.brancard = [] #List to carry Patient Classes
+        self.path = [(0, 0), (0, 1), (1, 0)] #Default path list
+        self.known_p = [] #List to save patients Class and location
         self.current_path = ()
-        self.previous_location = None
-        self.emotional_state = 100
-        self.pickedup = False
 
+        self.pickedup = False  # When picked up this becomes True, to prevent multiple patients to pickup
+        self.traumatizedMessage = False  # When traumatized this becomes True, to prevent multiple traumatize messages
+        self.previous_location = None  #When moving this becomes his former coordinates
+
+        self.emotional_state = 100 #Emotional state number of the medic
         self.mode = mode
         self.global_path = global_path
-        self.traumatizedMessage = False
-
 
     def move_agent(self, location):
         self.previous_location = self.pos
@@ -72,6 +72,9 @@ class Medic(Agent):
             self.model.grid.remove_agent(patient)
 
     def wander_choice_maker(self, locations, counter=0):
+        """
+
+        """
         choices = {}
         for pos in locations:
             surraw = [(list(pos)[-1][0], list(pos)[-1][1]+1), (list(pos)[-1][0], list(pos)[-1][1]-1),
@@ -261,13 +264,21 @@ class Patient(Agent):
         self.healthReduce()
 
     def createHealth(self, gridSize:list):
-        healthChart = list(reversed([gridSize[0] * i for i in range(1,6)])) # moet nog aangepast worden naar grootte veld?
+        """
+        creates healthChart by using the gridsize to setup a max and min
+        creates externhealth (the health that a doctor can see)
+        creates truehealth (the health that a patient really has)
+        """
+        healthChart = list(reversed([gridSize[0] * i for i in range(1,6)]))
         self.externHealth = healthChart[self.severity]
         self.trueHealth = np.random.normal(self.externHealth, 1/3, 1)[0]
 
     def healthReduce(self):
+        """
+        Patient reduces health every step by 0.1 until it dies
+        """
         if self.trueHealth > 0:
-            # self.health = self.health + (self.health - 100) / ((self.health - (self.health - 100)) * 10)
+
             self.trueHealth -= 0.1
         else:
             self.dead = True
@@ -275,22 +286,29 @@ class Patient(Agent):
 class Scout(Agent):
     def __init__(self, unique_id, model, mode="None"):
         super().__init__(unique_id, model)
-        self.found_p = []
+        self.found_p = [] #List to save patients Class and location
         self.path = []
-        self.amount_found_p = 0
+        self.amount_found_p = 0 #connected to the found_p but get it's length
         self.current_path = ()
         self.previous_location = None
-        self.outMessage = False
+        self.stamina = 600 #amount of steps before it's out of stamina
+        self.outMessage = False #if out of stamina
 
         self.mode = mode
 
     def move_agent(self, location):
+        """
+        Saves his current place and moves to his surroundings (get_neighborhood) and saves it in path
+        """
         self.previous_location = self.pos
         self.model.grid.move_agent(self, location)
         new_loc = self.model.grid.get_neighborhood(location, moore=False, include_center=True)
         self.path = self.path + (list(set(new_loc) - set(self.path)))  # removes duplicates
 
     def share_info(self):
+        """
+        adds self path and known_p into a global variable so other agents can see it and use it
+        """
         global global_path
         global global_known_p
         global_path = global_path + (list(set(self.path) - set(global_path)))  # removes duplicates
@@ -373,6 +391,7 @@ class Scout(Agent):
 
     def step(self):
         for x in range(2):
+            self.stamina = self.stamina - 1
             cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
             cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
             own_cell = self.model.grid.get_cell_list_contents([self.pos])
@@ -395,7 +414,7 @@ class Scout(Agent):
                     self.path = self.path + (list(set(ms.path) - set(self.path)))  # removes duplicates
                     print(any(self.known_p.count(element) > 1 for element in self.known_p))
 
-            if (self.mode == "info_share_medbase" and len(medcamp) > 0) or self.amount_found_p > 70:
+            if (self.mode == "info_share_medbase" and len(medcamp) > 0) or self.stamina <= 0:
                 self.goBase()
 
                 if self.outMessage is False:
@@ -407,7 +426,7 @@ class Scout(Agent):
 
             elif len(patient) > 0:
                 for p in patient:
-                    if p.pos not in [p[1] for p in self.found_p]:
+                    if p.pos not in [p[0] for p in self.found_p]:
                         if p.pos is None:
                             print(p.unique_id)
                         if not p.dead:
