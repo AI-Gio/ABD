@@ -3,12 +3,15 @@ import random
 import time
 import numpy as np
 
+global_path = [(0, 0), (0, 1), (1, 0)]
+global_known_p = []
+
 class Medic(Agent):
     """
     Searches for patients in the field and brings them back to camp, if statistically possible
     """
 
-    def __init__(self, unique_id, model):
+    def __init__(self, unique_id, model, mode="None"):
         super().__init__(unique_id, model)
         self.brancard = []
         self.path = [(0, 0), (0, 1), (1, 0)]
@@ -18,12 +21,24 @@ class Medic(Agent):
         self.emotional_state = 100
         self.pickedup = False
 
+        self.mode = mode
+        self.global_path = global_path
+
+
     def move_agent(self, location):
         self.previous_location = self.pos
         self.model.grid.move_agent(self, location)
         new_loc = self.model.grid.get_neighborhood(location, moore=False, include_center=True)
         self.path = self.path + (list(set(new_loc) - set(self.path)))  # removes duplicates
 
+    def share_info(self):
+        global global_path
+        global global_known_p
+        global_path = global_path + (list(set(self.path) - set(global_path)))  # removes duplicates
+        self.path = self.path + (list(set(global_path) - set(self.path)))  # removes duplicates
+
+        global_known_p = global_known_p + (list(set(self.known_p) - set(global_known_p)))  # removes duplicates
+        self.known_p = self.known_p + (list(set(global_known_p) - set(self.known_p)))  # removes duplicates
 
     def inspect(self, patient):
         """
@@ -146,6 +161,7 @@ class Medic(Agent):
         """
         Searches for patients and bring them back decided by calculations
         """
+
         if self.emotional_state <= 0:
             print(f"Medic is traumatized")
             quit()
@@ -162,6 +178,21 @@ class Medic(Agent):
         own_cell = self.model.grid.get_cell_list_contents([self.pos])
         patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
         medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
+
+        if self.mode == "constant_info_share" or (self.mode == "info_share_medbase" and len(medcamp) > 0):
+            self.share_info()
+
+        if self.mode == "info_share_meet":
+            medics = [obj for obj in cell_cross if isinstance(obj, Medic)]
+            scouts = [obj for obj in cell_cross if isinstance(obj, Scout)]
+            medics_and_scouts = medics + scouts
+            for ms in medics_and_scouts:
+                ms.known_p = ms.known_p + (list(set(self.known_p) - set(ms.known_p)))  # removes duplicates
+                self.known_p = self.known_p + (list(set(ms.known_p) - set(self.known_p)))  # removes duplicates
+
+                ms.path = global_path + (list(set(self.path) - set(ms.path)))  # removes duplicates
+                self.path = self.path + (list(set(ms.path) - set(self.path)))  # removes duplicates
+
 
         if len(patient) > 0 and len(self.brancard) == 0:
             pati = None
@@ -188,7 +219,7 @@ class Medic(Agent):
 
         nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
 
-        if len(self.brancard) > 0: # als de brancard vol is
+        if len(self.brancard) > 0:  # als de brancard vol is
             self.goBase()
             if self.brancard[0].health == 0:
                 print("Patient died")
@@ -196,10 +227,10 @@ class Medic(Agent):
                 self.wander()
                 self.pickedup = False
 
-        elif len(self.known_p) > 0: # als er locaties van patient zijn onthouden
+        elif len(self.known_p) > 0:  # als er locaties van patient zijn onthouden
             self.walk(self.known_p[0][0])
 
-        if len(self.brancard) == 0 and len(self.known_p) == 0: # als brancard leeg is en er zijn geen bekende plekken van patienten
+        if len(self.brancard) == 0 and len(self.known_p) == 0:  # als brancard leeg is en er zijn geen bekende plekken van patienten
             self.wander()
             self.pickedup = False
 
@@ -242,7 +273,7 @@ class Patient(Agent):
             self.dead = True
 
 class Scout(Agent):
-    def __init__(self, unique_id, model):
+    def __init__(self, unique_id, model, mode="None"):
         super().__init__(unique_id, model)
         self.found_p = []
         self.path = []
@@ -250,11 +281,22 @@ class Scout(Agent):
         self.current_path = ()
         self.previous_location = None
 
+        self.mode = mode
+
     def move_agent(self, location):
         self.previous_location = self.pos
         self.model.grid.move_agent(self, location)
         new_loc = self.model.grid.get_neighborhood(location, moore=False, include_center=True)
         self.path = self.path + (list(set(new_loc) - set(self.path)))  # removes duplicates
+
+    def share_info(self):
+        global global_path
+        global global_known_p
+        global_path = global_path + (list(set(self.path) - set(global_path)))  # removes duplicates
+        self.path = self.path + (list(set(global_path) - set(self.path)))  # removes duplicates
+
+        global_known_p = global_known_p + (list(set(self.known_p) - set(global_known_p)))  # removes duplicates
+        self.known_p = self.known_p + (list(set(global_known_p) - set(self.known_p)))  # removes duplicates
 
     def wander(self):
         """
@@ -329,12 +371,26 @@ class Scout(Agent):
             self.move_agent((x,y-1))
 
     def step(self):
-        for x in range (2):
+        for x in range(2):
             cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
             cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
             own_cell = self.model.grid.get_cell_list_contents([self.pos])
             patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
             medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
+
+            if self.mode == "constant_info_share" or (self.mode == "info_share_medbase" and len(medcamp) > 0):
+                self.share_info()
+
+            if self.mode == "info_share_meet":
+                medics = [obj for obj in cell_cross if isinstance(obj, Medic)]
+                scouts = [obj for obj in cell_cross if isinstance(obj, Scout)]
+                medics_and_scouts = medics + scouts
+                for ms in medics_and_scouts:
+                    ms.known_p = ms.known_p + (list(set(self.known_p) - set(ms.known_p)))  # removes duplicates
+                    self.known_p = self.known_p + (list(set(ms.known_p) - set(self.known_p)))  # removes duplicates
+
+                    ms.path = global_path + (list(set(self.path) - set(ms.path)))  # removes duplicates
+                    self.path = self.path + (list(set(ms.path) - set(self.path)))  # removes duplicates
 
             if self.amount_found_p >= 5:
                 self.gobase

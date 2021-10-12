@@ -11,7 +11,7 @@ class Triage(Model):
     Simulation of Triage
     """
     # todo: hier worden alle agents aangemaakt
-    def __init__(self, width=10, height=10, init_medic=1, init_patient=1, init_camp=1):
+    def __init__(self, width=10, height=10, init_medic=1, init_patient=1, init_camp=1, mode="None"):
         self.width = width
         self.height = height
 
@@ -42,3 +42,4 @@ class Triage(Model):
 
     def step(self):
         self.schedule.step()
+
