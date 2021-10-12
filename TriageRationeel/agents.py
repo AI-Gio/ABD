@@ -388,14 +388,18 @@ class Scout(Agent):
                 for ms in medics_and_scouts:
                     ms.known_p = ms.known_p + (list(set(self.known_p) - set(ms.known_p)))  # removes duplicates
                     self.known_p = self.known_p + (list(set(ms.known_p) - set(self.known_p)))  # removes duplicates
+                    self.amount_found_p = len(self.known_p)
 
                     ms.path = global_path + (list(set(self.path) - set(ms.path)))  # removes duplicates
                     self.path = self.path + (list(set(ms.path) - set(self.path)))  # removes duplicates
+                    print(any(self.known_p.count(element) > 1 for element in self.known_p))
 
-            if self.amount_found_p >= 5:
-                self.gobase
+            if (self.mode == "info_share_medbase" and len(medcamp) > 0) or self.amount_found_p > 70:
 
-            elif len(patient) == 0:
+                print("AAAAAHHHHHH")
+                self.goBase()
+
+            if len(patient) == 0:
                 self.wander()
 
             elif len(patient) > 0:
@@ -406,6 +410,7 @@ class Scout(Agent):
                         if not p.dead:
                             self.found_p.append((p.pos, p))
                             self.amount_found_p = self.amount_found_p + 1
+                self.wander()
 
             elif len(medcamp) == 1:
                 pass
