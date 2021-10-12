@@ -18,6 +18,10 @@ def sim_portrayal(agent):
     if type(agent) is Medic:
         if agent.pickedup:
             portrayal["text"] = "⚕️"
+        elif agent.emotional_state <= 0:
+            portrayal["text"] = "☠️"
+
+
         else:
             portrayal["text"] = "👨"
         portrayal["Color"] = "#d44e4e"

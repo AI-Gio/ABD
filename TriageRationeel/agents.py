@@ -23,6 +23,7 @@ class Medic(Agent):
 
         self.mode = mode
         self.global_path = global_path
+        self.traumatizedMessage = False
 
 
     def move_agent(self, location):
@@ -162,9 +163,14 @@ class Medic(Agent):
         """
         Searches for patients and bring them back decided by calculations
         """
-        if self.emotional_state <= 0:
-            print(f"Medic is traumatized")
+        if self.emotional_state <= 0 and  self.traumatizedMessage is False:
+            print("Medic " + str(self.unique_id) + " is traumatized")
+            self.traumatizedMessage = True
             return
+
+        if self.emotional_state <= 0:
+            return
+
 
         if self.model.height * self.model.width == len(self.path) and self.brancard == [] and self.known_p == []:
             print("Simulation has ended.")
@@ -246,6 +252,7 @@ class Patient(Agent):
         self.severity = random.randint(0, 4)
         self.dead = False
 
+
     def step(self):
         self.healthReduce()
 
@@ -269,6 +276,7 @@ class Scout(Agent):
         self.amount_found_p = 0
         self.current_path = ()
         self.previous_location = None
+        self.outMessage = False
 
         self.mode = mode
 
@@ -384,9 +392,11 @@ class Scout(Agent):
                     print(any(self.known_p.count(element) > 1 for element in self.known_p))
 
             if (self.mode == "info_share_medbase" and len(medcamp) > 0) or self.amount_found_p > 70:
-
-                # print("AAAAAHHHHHHH")
                 self.goBase()
+
+                if self.outMessage is False:
+                    print("Scout " + str(self.unique_id) + " is out")
+                    self.outMessage = True
 
             if len(patient) == 0:
                 self.wander()
