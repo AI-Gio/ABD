@@ -1,6 +1,5 @@
 from mesa import Agent
 import random
-import time
 import numpy as np
 from scipy.stats import norm
 
@@ -49,19 +48,9 @@ class Medic(Agent):
         print('Patient ' + str(patient.unique_id) + ': ' + str(patient.trueHealth) + "hp")
         z_scores = (patient.externHealth - self.pos[0] + self.pos[1]) / ((1/3)*10)
         distance_reach_chance = norm.cdf(z_scores)
-        choice = random.choices(population=[True, False], weights=[distance_reach_chance, 1-distance_reach_chance])[0]
-        print(self.pos[0] + self.pos[1], patient.externHealth)
-        print(distance_reach_chance)
-        print(choice)
-        if not choice and patient.dead == False:
-            self.emotional_state = self.emotional_state - 20
-            print("Medic: Omae wa mou, shindeiru\nPatient: NANI???\n*Patient died*")
-            if self.known_p:
-                for i, p in enumerate(self.known_p):
-                    if patient == p[1]:
-                        self.known_p.pop(i)
-            patient.trueHealth = 0
-            patient.dead = True
+        pickup = random.choices(population=[True, False], weights=[distance_reach_chance, 1-distance_reach_chance])[0]
+        if not pickup and patient.dead == False: # als niet pickup en patient is niet dood dan
+            return
 
         elif patient.dead == False:
             print("Come. this is no place to die")
@@ -101,7 +90,7 @@ class Medic(Agent):
 
         if (len(possible_choices) > 1 and counter < 3) and max(choices.values()) < 4:
             possible_choices = self.wander_choice_maker(possible_choices, counter+1)
-        print(possible_choices, self.unique_id)
+        # print(possible_choices, self.unique_id)
         # elif (len(possible_choices) > 1 and counter >= 3) and max(choices.values()) < 4:
             # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
             # rightcount = len(set(right) - set(self.path))
@@ -134,7 +123,7 @@ class Medic(Agent):
             self.current_path = list(random.choice(possible_choices)[1::])
 
         self.move_agent(self.current_path[0])
-        print(self.current_path[0], self.unique_id)
+        # print(self.current_path[0], self.unique_id)
         del self.current_path[0]
 
     def walk(self, point):
@@ -180,12 +169,9 @@ class Medic(Agent):
         if self.emotional_state <= 0:
             return
 
-
         if self.model.height * self.model.width == len(self.path) and self.brancard == [] and self.known_p == []:
             print("Simulation has ended.")
             return
-
-        print("grid:{}, walked path:{}".format(self.model.height * self.model.width, len(self.path)))
 
         cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
         cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
@@ -228,6 +214,7 @@ class Medic(Agent):
 
         if len(medcamp) > 0 and len(self.brancard) > 0: # als medic op medcamp staat word brancard geleegd
             medcamp[0].saved_patients.append(self.brancard[0])
+            self.brancard[0].in_medcamp = True
             self.brancard = []
             self.pickedup = False
 
@@ -236,13 +223,15 @@ class Medic(Agent):
         if len(self.brancard) > 0: # als de brancard vol is
             self.goBase()
             if self.brancard[0].trueHealth == 0:
+                self.emotional_state -= 20
+                self.model.grid.place_agent(self.brancard[0], self.pos)
+                self.brancard[0].dead = True
                 print("Patient died")
                 self.brancard = []
                 self.wander()
                 self.pickedup = False
 
         elif len(self.known_p) > 0: # als er locaties van patient zijn onthouden
-
             if self.known_p[0][0] == self.pos and self.known_p[0][0] not in own_cell:
                 self.known_p.pop(0)
             else:
@@ -260,10 +249,11 @@ class Patient(Agent):
         super().__init__(unique_id, model)
         self.severity = random.randint(0, 4)
         self.dead = False
-
+        self.in_medcamp = False
 
     def step(self):
-        self.healthReduce()
+        if not self.in_medcamp:
+            self.healthReduce()
 
     def createHealth(self, gridSize:list):
         """
@@ -288,7 +278,7 @@ class Patient(Agent):
 class Scout(Agent):
     def __init__(self, unique_id, model, mode="None"):
         super().__init__(unique_id, model)
-        self.found_p = [] #List to save patients Class and location
+        self.known_p = []
         self.path = []
         self.amount_found_p = 0 #connected to the found_p but get it's length
         self.current_path = ()
@@ -318,6 +308,7 @@ class Scout(Agent):
 
         global_known_p = global_known_p + (list(set(self.known_p) - set(global_known_p)))  # removes duplicates
         self.known_p = self.known_p + (list(set(global_known_p) - set(self.known_p)))  # removes duplicates
+        # print(len(self.known_p), self.unique_id)
 
     def wander(self):
         """
@@ -393,7 +384,8 @@ class Scout(Agent):
 
     def step(self):
         for x in range(2):
-            self.stamina = self.stamina - 1
+            if self.stamina > 0:
+                self.stamina = self.stamina - 1
             cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
             cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
             own_cell = self.model.grid.get_cell_list_contents([self.pos])
@@ -414,7 +406,7 @@ class Scout(Agent):
 
                     ms.path = global_path + (list(set(self.path) - set(ms.path)))  # removes duplicates
                     self.path = self.path + (list(set(ms.path) - set(self.path)))  # removes duplicates
-                    print(any(self.known_p.count(element) > 1 for element in self.known_p))
+                    # print(any(self.known_p.count(element) > 1 for element in self.known_p))
 
             if (self.mode == "info_share_medbase" and len(medcamp) > 0) or self.stamina <= 0:
                 self.goBase()
@@ -428,14 +420,13 @@ class Scout(Agent):
 
             elif len(patient) > 0:
                 for p in patient:
-                    if p.pos not in [p[0] for p in self.found_p]:
+                    if p.pos not in [p[0] for p in self.known_p]:
                         if p.pos is None:
                             print(p.unique_id)
                         if not p.dead:
-                            self.found_p.append((p.pos, p))
+                            self.known_p.append((p.pos, p))
                             self.amount_found_p = self.amount_found_p + 1
                 self.wander()
-
             elif len(medcamp) == 1:
                 pass
 

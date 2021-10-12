@@ -12,7 +12,7 @@ class Triage(Model):
     Simulation of Triage
     """
     # hier worden alle agents aangemaakt en geplaatst en grid aangemaakt
-    def __init__(self, width=20, height=20, init_medic=2, init_patient=9, init_scouts=3):
+    def __init__(self, width=20, height=20, init_medic=2, init_patient=9, init_scouts=1, mode="None"):
         self.width = width
         self.height = height
 
@@ -22,14 +22,14 @@ class Triage(Model):
 
         medic_poss = []
         for m in range(init_medic):
-            medic = Medic(m, self)
+            medic = Medic(m, self, mode=mode)
             medic_poss.append((0,0))
             self.grid.place_agent(medic, (0,0))
             self.schedule.add(medic)
 
         scout_poss = []
         for s in range(init_scouts):
-            scout = Scout(s+10, self)
+            scout = Scout(s+10, self, mode=mode)
             scout_poss.append((0,0))
             self.grid.place_agent(scout, (1,1))
             self.schedule.add(scout)
