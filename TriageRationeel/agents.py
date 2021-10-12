@@ -385,7 +385,7 @@ class Scout(Agent):
 
             if (self.mode == "info_share_medbase" and len(medcamp) > 0) or self.amount_found_p > 70:
 
-                print("AAAAAHHHHHHH")
+                # print("AAAAAHHHHHHH")
                 self.goBase()
 
             if len(patient) == 0:
