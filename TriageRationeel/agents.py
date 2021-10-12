@@ -45,15 +45,15 @@ class Medic(Agent):
         Medic inspects patient how severe the situation is and decides then what to do next
         :return:
         """
-        print('Patient ' + str(patient.unique_id) + ': ' + str(patient.health) + "hp")
-        if self.pos[0] + self.pos[1] >= patient.health and patient.dead == False:
+        print('Patient ' + str(patient.unique_id) + ': ' + str(patient.trueHealth) + "hp")
+        if self.pos[0] + self.pos[1] >= patient.trueHealth and patient.dead == False:
             self.emotional_state = self.emotional_state - 20
             print("Medic: Omae wa mou, shindeiru\nPatient: NANI???\n*Patient died*")
             if self.known_p:
                 for i, p in enumerate(self.known_p):
                     if patient == p[1]:
                         self.known_p.pop(i)
-            patient.health = 0
+            patient.trueHealth = 0
             patient.dead = True
 
         elif patient.dead == False:
@@ -87,11 +87,11 @@ class Medic(Agent):
                 path.append(loc)
                 choices[tuple(path)] = score
 
-
         possible_choices = [k for k, v in choices.items() if v == max(choices.values())]
 
         if (len(possible_choices) > 1 and counter < 3) and max(choices.values()) < 4:
             possible_choices = self.wander_choice_maker(possible_choices, counter+1)
+        print(possible_choices, self.unique_id)
         # elif (len(possible_choices) > 1 and counter >= 3) and max(choices.values()) < 4:
             # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
             # rightcount = len(set(right) - set(self.path))
@@ -124,6 +124,7 @@ class Medic(Agent):
             self.current_path = list(random.choice(possible_choices)[1::])
 
         self.move_agent(self.current_path[0])
+        print(self.current_path[0], self.unique_id)
         del self.current_path[0]
 
     def walk(self, point):
@@ -161,17 +162,15 @@ class Medic(Agent):
         """
         Searches for patients and bring them back decided by calculations
         """
-
         if self.emotional_state <= 0:
             print(f"Medic is traumatized")
-            quit()
+            return
 
         if self.model.height * self.model.width == len(self.path) and self.brancard == [] and self.known_p == []:
             print("Simulation has ended.")
-            quit()
+            return
 
         print("grid:{}, walked path:{}".format(self.model.height * self.model.width, len(self.path)))
-        print(len(self.model.grid.empties))
 
         cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
         cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
@@ -219,18 +218,22 @@ class Medic(Agent):
 
         nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
 
-        if len(self.brancard) > 0:  # als de brancard vol is
+        if len(self.brancard) > 0: # als de brancard vol is
             self.goBase()
-            if self.brancard[0].health == 0:
+            if self.brancard[0].trueHealth == 0:
                 print("Patient died")
                 self.brancard = []
                 self.wander()
                 self.pickedup = False
 
-        elif len(self.known_p) > 0:  # als er locaties van patient zijn onthouden
-            self.walk(self.known_p[0][0])
+        elif len(self.known_p) > 0: # als er locaties van patient zijn onthouden
 
-        if len(self.brancard) == 0 and len(self.known_p) == 0:  # als brancard leeg is en er zijn geen bekende plekken van patienten
+            if self.known_p[0][0] == self.pos and self.known_p[0][0] not in own_cell:
+                self.known_p.pop(0)
+            else:
+                self.walk(self.known_p[0][0])
+
+        if len(self.brancard) == 0 and len(self.known_p) == 0: # als brancard leeg is en er zijn geen bekende plekken van patienten
             self.wander()
             self.pickedup = False
 
@@ -240,35 +243,21 @@ class Patient(Agent):
     """
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
-        self.severity = random.randint(1, 5)
-        self.health = 100
+        self.severity = random.randint(0, 4)
         self.dead = False
 
     def step(self):
         self.healthReduce()
 
     def createHealth(self, gridSize:list):
-        healthChart = [100, 80, 60, 40, 20]
-        healthScale = random.choice(healthChart)
-        #now we finetune it with a std to make it unpredictable
-        sizeSteps = 20
-        amountSteps = 4
-        std = sizeSteps/amountSteps
-        self.health = round(np.random.normal(healthScale, std, 1)[0])
-        self.externHealth = healthScale #this number is the approximate health that the doctor knows
-
-
-        # if gridSize[0] > gridSize[1]:
-        #     self.health = gridSize[0] / 50 * healthChart[self.severity-1]
-        # else:
-        #     self.health = gridSize[1] / 50 * healthChart[self.severity-1]
-        # self.health = randomHealth
-        print(self.health)
+        healthChart = list(reversed([gridSize[0] * i for i in range(1,6)])) # moet nog aangepast worden naar grootte veld?
+        self.externHealth = healthChart[self.severity]
+        self.trueHealth = np.random.normal(self.externHealth, 2.5, 1)[0]
 
     def healthReduce(self):
-        if self.health > 0:
+        if self.trueHealth > 0:
             # self.health = self.health + (self.health - 100) / ((self.health - (self.health - 100)) * 10)
-            self.health -= 1
+            self.trueHealth -= 0.1
         else:
             self.dead = True
 

@@ -22,6 +22,7 @@ def sim_portrayal(agent):
             portrayal["text"] = "👨"
         portrayal["Color"] = "#d44e4e"
         portrayal["Emotional state"] = Medic.__getattribute__(agent, 'emotional_state')
+        portrayal["unique_id"] = Medic.__getattribute__(agent, 'unique_id')
         if len(Medic.__getattribute__(agent, 'brancard')) > 0:
             portrayal["Brancard"] = Medic.__getattribute__(agent, 'brancard')[0].unique_id
         else:
@@ -33,11 +34,13 @@ def sim_portrayal(agent):
         if agent.dead:
             portrayal["text"] = "💀️"
             portrayal["Color"] = "#e3e3e3"
-            portrayal["Health"] = Patient.__getattribute__(agent,'health')
+            portrayal["externHealth"] = Patient.__getattribute__(agent, 'externHealth')
+            portrayal["trueHealth"] = Patient.__getattribute__(agent, 'trueHealth')
         else:
             portrayal["text"] = "🤕"
             portrayal["Color"] = "#e3e3e3"
-            portrayal["Health"] = Patient.__getattribute__(agent,'health')
+            portrayal["externHealth"] = Patient.__getattribute__(agent, 'externHealth')
+            portrayal["trueHealth"] = Patient.__getattribute__(agent, 'trueHealth')
 
     elif type(agent) is MedCamp:
         portrayal["text"] = "🏥"
