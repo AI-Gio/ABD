@@ -59,12 +59,16 @@ def sim_portrayal(agent):
     return portrayal
 
 sim = CanvasGrid(sim_portrayal, 20, 20, 500, 500)
+chart_element = ChartModule(
+    [{"Label": "Dead_patients", "Color": "red"}], data_collector_name="datacollector"
+)
+
 model_params = {
     "init_patient":UserSettableParameter("slider", "Init_patients", value=2,
                                      min_value=1, max_value=sim.grid_width*sim.grid_height-(sim.grid_height+sim.grid_width), step=1)
 }#bron: https://github.com/projectmesa/mesa/issues/419
 
-server = ModularServer(Triage, [sim],
+server = ModularServer(Triage, [sim, chart_element],
                        "Triage", model_params)
 
 

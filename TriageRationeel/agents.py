@@ -10,7 +10,6 @@ class Medic(Agent):
     """
     Searches for patients in the field and brings them back to camp, if statistically possible
     """
-
     def __init__(self, unique_id, model, mode="None"):
         super().__init__(unique_id, model)
         self.brancard = []
@@ -259,7 +258,7 @@ class Patient(Agent):
     def createHealth(self, gridSize:list):
         healthChart = list(reversed([gridSize[0] * i for i in range(1,6)])) # moet nog aangepast worden naar grootte veld?
         self.externHealth = healthChart[self.severity]
-        self.trueHealth = np.random.normal(self.externHealth, 2.5, 1)[0]
+        self.trueHealth = np.random.normal(self.externHealth, 1/3, 1)[0]
 
     def healthReduce(self):
         if self.trueHealth > 0:
@@ -413,7 +412,6 @@ class Scout(Agent):
 
             elif len(medcamp) == 1:
                 pass
-
 
 class MedCamp(Agent):
     """

@@ -3,7 +3,7 @@ from itertools import product
 from mesa.space import MultiGrid
 from mesa import Model
 from mesa.time import SimultaneousActivation
-
+from mesa.datacollection import DataCollector
 
 from TriageRationeel.agents import *
 
@@ -48,6 +48,13 @@ class Triage(Model):
         self.grid.place_agent(medcamp, (0,0))
         self.schedule.add(medcamp)
 
+        self.datacollector = DataCollector({"Dead_patients": lambda m: m.get_dead_patient()})
+
+    def get_dead_patient(self):
+        return len([obj for obj in self.schedule.agents if isinstance(obj, Patient) and obj.dead])
 
     def step(self):
+        self.datacollector.collect(self)
         self.schedule.step()
+
+
