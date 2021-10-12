@@ -2,6 +2,7 @@ from mesa import Agent
 import random
 import time
 import numpy as np
+from scipy.stats import norm
 
 global_path = [(0, 0), (0, 1), (1, 0)]
 global_known_p = []
@@ -46,7 +47,11 @@ class Medic(Agent):
         :return:
         """
         print('Patient ' + str(patient.unique_id) + ': ' + str(patient.trueHealth) + "hp")
-        if self.pos[0] + self.pos[1] >= patient.trueHealth and patient.dead == False:
+        z_scores = (patient.externHealth - self.pos[0] + self.pos[1]) / ((1/3)*10)
+        distance_reach_chance = norm.cdf(z_scores)
+        choice = random.choices(population=[True, False], weights=[distance_reach_chance, 1-distance_reach_chance])[0]
+        # print(choice)
+        if not choice and patient.dead == False:
             self.emotional_state = self.emotional_state - 20
             print("Medic: Omae wa mou, shindeiru\nPatient: NANI???\n*Patient died*")
             if self.known_p:
