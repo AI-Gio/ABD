@@ -50,7 +50,7 @@ def sim_portrayal(agent):
     elif type(agent) is Scout:
         portrayal["text"] = "🏃"
         portrayal["Color"] = "#d44e4e"
-        portrayal["amount_found_p"] = Scout.__getattribute__(agent, 'amount_found_p')
+        portrayal["Amount Found Patients"] = Scout.__getattribute__(agent, 'amount_found_p')
 
     return portrayal
 
