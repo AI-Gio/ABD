@@ -12,7 +12,7 @@ class Triage(Model):
     Simulation of Triage
     """
     # hier worden alle agents aangemaakt en geplaatst en grid aangemaakt
-    def __init__(self, width=20, height=20, init_medic=1, init_patient=9, init_scouts=0):
+    def __init__(self, width=20, height=20, init_medic=2, init_patient=9, init_scouts=0):
         self.width = width
         self.height = height
 
