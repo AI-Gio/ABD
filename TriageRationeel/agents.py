@@ -6,22 +6,24 @@ from scipy.stats import norm
 global_path = [(0, 0), (0, 1), (1, 0)]
 global_known_p = []
 
+
 class Medic(Agent):
     """
     Searches for patients in the field and brings them back to camp, if statistically possible
     """
+
     def __init__(self, unique_id, model, mode="None"):
         super().__init__(unique_id, model)
-        self.brancard = [] #List to carry Patient Classes
-        self.path = [(0, 0), (0, 1), (1, 0)] #Default path list
-        self.known_p = [] #List to save patients Class and location
+        self.brancard = []  # List to carry Patient Classes
+        self.path = [(0, 0), (0, 1), (1, 0)]  # Default path list
+        self.known_p = []  # List to save patients Class and location
         self.current_path = ()
 
         self.pickedup = False  # When picked up this becomes True, to prevent multiple patients to pickup
         self.traumatizedMessage = False  # When traumatized this becomes True, to prevent multiple traumatize messages
-        self.previous_location = None  #When moving this becomes his former coordinates
+        self.previous_location = None  # When moving this becomes his former coordinates
 
-        self.emotional_state = 100 #Emotional state number of the medic
+        self.emotional_state = 100  # Emotional state number of the medic
         self.mode = mode
         self.global_path = global_path
 
@@ -46,13 +48,13 @@ class Medic(Agent):
         :return:
         """
         print('Patient ' + str(patient.unique_id) + ': ' + str(patient.trueHealth) + "hp")
-        z_scores = (patient.externHealth - self.pos[0] + self.pos[1]) / ((1/3)*10)
+        z_scores = (patient.externHealth - len(self.goBase()) - 1) / ((1 / 3) * 10)
         distance_reach_chance = norm.cdf(z_scores)
-        pickup = random.choices(population=[True, False], weights=[distance_reach_chance, 1-distance_reach_chance])[0]
-        if not pickup and patient.dead == False: # als niet pickup en patient is niet dood dan
+        pickup = random.choices(population=[True, False], weights=[distance_reach_chance, 1 - distance_reach_chance])[0]
+        if not pickup and not patient.dead:  # als niet pickup en patient is niet dood dan
             return
 
-        elif patient.dead == False:
+        elif not patient.dead:
             print("Come. this is no place to die")
             if self.known_p:
                 for i, p in enumerate(self.known_p):
@@ -68,8 +70,8 @@ class Medic(Agent):
         """
         choices = {}
         for pos in locations:
-            surraw = [(list(pos)[-1][0], list(pos)[-1][1]+1), (list(pos)[-1][0], list(pos)[-1][1]-1),
-                      (list(pos)[-1][0]+1, list(pos)[-1][1]), (list(pos)[-1][0]-1, list(pos)[-1][1])]
+            surraw = [(list(pos)[-1][0], list(pos)[-1][1] + 1), (list(pos)[-1][0], list(pos)[-1][1] - 1),
+                      (list(pos)[-1][0] + 1, list(pos)[-1][1]), (list(pos)[-1][0] - 1, list(pos)[-1][1])]
             sur = [i for i in surraw if (0 <= i[0] < self.model.width) and (0 <= i[1] < self.model.height)]
             if self.previous_location in sur and len(sur) > 1:
                 sur.remove(self.previous_location)
@@ -89,25 +91,25 @@ class Medic(Agent):
         possible_choices = [k for k, v in choices.items() if v == max(choices.values())]
 
         if (len(possible_choices) > 1 and counter < 3) and max(choices.values()) < 4:
-            possible_choices = self.wander_choice_maker(possible_choices, counter+1)
+            possible_choices = self.wander_choice_maker(possible_choices, counter + 1)
         # print(possible_choices, self.unique_id)
         # elif (len(possible_choices) > 1 and counter >= 3) and max(choices.values()) < 4:
-            # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
-            # rightcount = len(set(right) - set(self.path))
-            # left = [x for x in self.model.grid.empties if x[0] < self.pos[0]]
-            # leftcount = len(set(left) - set(self.path))
-            # up = [x for x in self.model.grid.empties if x[1] > self.pos[1]]
-            # upcount = len(set(up) - set(self.path))
-            # down = [x for x in self.model.grid.empties if x[1] < self.pos[1]]
-            # downcount = len(set(down) - set(self.path))
-            # count_list = [rightcount, leftcount, upcount, downcount]
-            # max_index = count_list.index(max(count_list))
-            # return {
-            #     0: [(self.pos, (self.pos[0] + 1, self.pos[1]))],
-            #     1: [(self.pos, (self.pos[0] - 1, self.pos[1]))],
-            #     2: [(self.pos, (self.pos[0], self.pos[1] + 1))],
-            #     3: [(self.pos, (self.pos[0], self.pos[1] - 1))],
-            #     }.get(max_index)
+        # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
+        # rightcount = len(set(right) - set(self.path))
+        # left = [x for x in self.model.grid.empties if x[0] < self.pos[0]]
+        # leftcount = len(set(left) - set(self.path))
+        # up = [x for x in self.model.grid.empties if x[1] > self.pos[1]]
+        # upcount = len(set(up) - set(self.path))
+        # down = [x for x in self.model.grid.empties if x[1] < self.pos[1]]
+        # downcount = len(set(down) - set(self.path))
+        # count_list = [rightcount, leftcount, upcount, downcount]
+        # max_index = count_list.index(max(count_list))
+        # return {
+        #     0: [(self.pos, (self.pos[0] + 1, self.pos[1]))],
+        #     1: [(self.pos, (self.pos[0] - 1, self.pos[1]))],
+        #     2: [(self.pos, (self.pos[0], self.pos[1] + 1))],
+        #     3: [(self.pos, (self.pos[0], self.pos[1] - 1))],
+        #     }.get(max_index)
         return possible_choices
 
     def wander(self):
@@ -126,42 +128,97 @@ class Medic(Agent):
         # print(self.current_path[0], self.unique_id)
         del self.current_path[0]
 
-    def walk(self, point):
+    def walk(self, destination):
         """
         Medic walks straight to a coordinate
         :return:
         """
-        x, y = self.pos
-        if x > point[0]:
-            # moet naar links
-            self.move_agent((x-1,y))
-        elif x < point[0]:
-            # moet naar rechts
-            self.move_agent((x + 1, y))
-        elif y > point[1]:
-            # naar beneden
-            self.move_agent((x, y-1))
-        elif y < point[1]:
-            # naar boven
-            self.move_agent((x, y+1))
+        self.current_path = ()
+        for loc in self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False):
+            if loc not in self.path:
+                self.path.append(loc)
+        opened = [[self.pos, None, 0, 0]]
+        closed = []
+        paths = {}
+        while len(opened) > 0:
+            curnode = opened[0].copy()
+            for i in opened:
+                if i[-1] < curnode[-1]:
+                    curnode = i.copy()
+
+            opened.remove(curnode)
+            closed.append(curnode)
+            paths[curnode[0]] = [curnode[1], curnode[2], curnode[3]]
+
+            if curnode[0] == destination:
+                shortpath = [destination]
+                prev = paths[destination][0]
+                while prev:
+                    shortpath.append(prev)
+                    prev = paths[prev][0]
+                self.model.grid.move_agent(self, shortpath[-2])
+                break
+
+            curcor = curnode[0]
+            next = [(curcor[0], curcor[1] + 1), (curcor[0], curcor[1] - 1), (curcor[0] + 1, curcor[1]),
+                    (curcor[0] - 1, curcor[1])]
+            for j in next:
+                if j in self.path and j not in paths.keys():
+                    destdist = abs(j[0] - destination[0]) ** 2 + abs(j[1] - destination[1]) ** 2
+                    nextnode = [j, curcor, curnode[2] + 1, (curnode[2] + 1) + destdist]
+                    for k in opened:
+                        if k[0] == nextnode[0] and k[-2] < nextnode[-2]:
+                            continue
+                    opened.append(nextnode)
 
     def goBase(self):
         """
         Uses shortest path alg to return to base to return patient
         :return:
         """
+        camploc = (0, 0)
         self.current_path = ()
-        x, y = self.pos
-        if self.pos[0] > 0:
-            self.move_agent((x - 1, y))
-        elif self.pos[1] > 0:
-            self.move_agent((x,y-1))
+        for loc in self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False):
+            if loc not in self.path:
+                self.path.append(loc)
+        opened = [[self.pos, None, 0, 0]]
+        closed = []
+        paths = {}
+        while len(opened) > 0:
+            curnode = opened[0].copy()
+            for i in opened:
+                if i[-1] < curnode[-1]:
+                    curnode = i.copy()
+
+            opened.remove(curnode)
+            closed.append(curnode)
+            paths[curnode[0]] = [curnode[1], curnode[2], curnode[3]]
+
+            if curnode[0] == camploc:
+                shortpath = [camploc]
+                prev = paths[camploc][0]
+                while prev:
+                    shortpath.append(prev)
+                    prev = paths[prev][0]
+                return shortpath
+
+            curcor = curnode[0]
+            next = [(curcor[0], curcor[1] + 1), (curcor[0], curcor[1] - 1), (curcor[0] + 1, curcor[1]),
+                    (curcor[0] - 1, curcor[1])]
+            for j in next:
+                if j in self.path and j not in paths.keys():
+                    destdist = abs(j[0] - camploc[0]) ** 2 + abs(j[1] - camploc[1]) ** 2
+                    nextnode = [j, curcor, curnode[2] + 1, (curnode[2] + 1) + destdist]
+                    for k in opened:
+                        if k[0] == nextnode[0] and k[-2] < nextnode[-2]:
+                            continue
+                    opened.append(nextnode)
 
     def step(self):
         """
         Searches for patients and bring them back decided by calculations
         """
-        if self.emotional_state <= 0 and  self.traumatizedMessage is False:
+        if self.emotional_state <= 0 and self.traumatizedMessage is False:
             print("Medic " + str(self.unique_id) + " is traumatized")
             self.traumatizedMessage = True
             return
@@ -173,7 +230,7 @@ class Medic(Agent):
             print("Simulation has ended.")
             return
 
-        cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
+        cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)  # coords
         cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
         own_cell = self.model.grid.get_cell_list_contents([self.pos])
         patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
@@ -193,7 +250,6 @@ class Medic(Agent):
                 ms.path = global_path + (list(set(self.path) - set(ms.path)))  # removes duplicates
                 self.path = self.path + (list(set(ms.path) - set(self.path)))  # removes duplicates
 
-
         if len(patient) > 0 and len(self.brancard) == 0:
             pati = None
             for pat in patient:
@@ -204,7 +260,7 @@ class Medic(Agent):
                     break
             patient.remove(pati)
 
-        if len(patient) > 0 and len(self.brancard) > 0: # als er een patient om medic heen staat en de brancard is vol
+        if len(patient) > 0 and len(self.brancard) > 0:  # als er een patient om medic heen staat en de brancard is vol
             for p in patient:
                 if p.pos not in [p[0] for p in self.known_p]:
                     if p.pos is None:
@@ -212,7 +268,7 @@ class Medic(Agent):
                     if not p.dead:
                         self.known_p.append((p.pos, p))
 
-        if len(medcamp) > 0 and len(self.brancard) > 0: # als medic op medcamp staat word brancard geleegd
+        if len(medcamp) > 0 and len(self.brancard) > 0:  # als medic op medcamp staat word brancard geleegd
             medcamp[0].saved_patients.append(self.brancard[0])
             self.brancard[0].in_medcamp = True
             self.brancard = []
@@ -220,8 +276,8 @@ class Medic(Agent):
 
         nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
 
-        if len(self.brancard) > 0: # als de brancard vol is
-            self.goBase()
+        if len(self.brancard) > 0:  # als de brancard vol is
+            self.model.grid.move_agent(self, self.goBase()[-2])
             if self.brancard[0].trueHealth == 0:
                 self.emotional_state -= 20
                 self.model.grid.place_agent(self.brancard[0], self.pos)
@@ -231,20 +287,23 @@ class Medic(Agent):
                 self.wander()
                 self.pickedup = False
 
-        elif len(self.known_p) > 0: # als er locaties van patient zijn onthouden
+        elif len(self.known_p) > 0:  # als er locaties van patient zijn onthouden
             if self.known_p[0][0] == self.pos and self.known_p[0][0] not in own_cell:
                 self.known_p.pop(0)
             else:
                 self.walk(self.known_p[0][0])
 
-        if len(self.brancard) == 0 and len(self.known_p) == 0: # als brancard leeg is en er zijn geen bekende plekken van patienten
+        if len(self.brancard) == 0 and len(
+                self.known_p) == 0:  # als brancard leeg is en er zijn geen bekende plekken van patienten
             self.wander()
             self.pickedup = False
+
 
 class Patient(Agent):
     """
     Person that is stuck somewhere in the field after a disaster
     """
+
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.severity = random.randint(0, 4)
@@ -255,15 +314,15 @@ class Patient(Agent):
         if not self.in_medcamp:
             self.healthReduce()
 
-    def createHealth(self, gridSize:list):
+    def createHealth(self, gridSize: list):
         """
         creates healthChart by using the gridsize to setup a max and min
         creates externhealth (the health that a doctor can see)
         creates truehealth (the health that a patient really has)
         """
-        healthChart = list(reversed([gridSize[0] * i for i in range(1,6)]))
+        healthChart = list(reversed([gridSize[0] * i for i in range(1, 6)]))
         self.externHealth = healthChart[self.severity]
-        self.trueHealth = np.random.normal(self.externHealth, 1/3, 1)[0]
+        self.trueHealth = np.random.normal(self.externHealth, 1 / 3, 1)[0]
 
     def healthReduce(self):
         """
@@ -275,16 +334,17 @@ class Patient(Agent):
         else:
             self.dead = True
 
+
 class Scout(Agent):
     def __init__(self, unique_id, model, mode="None"):
         super().__init__(unique_id, model)
         self.known_p = []
         self.path = []
-        self.amount_found_p = 0 #connected to the found_p but get it's length
+        self.amount_found_p = 0  # connected to the found_p but get it's length
         self.current_path = ()
         self.previous_location = None
-        self.stamina = 600 #amount of steps before it's out of stamina
-        self.outMessage = False #if out of stamina
+        self.stamina = 600  # amount of steps before it's out of stamina
+        self.outMessage = False  # if out of stamina
 
         self.mode = mode
 
@@ -328,8 +388,8 @@ class Scout(Agent):
     def wander_choice_maker(self, locations, counter=0):
         choices = {}
         for pos in locations:
-            surraw = [(list(pos)[-1][0], list(pos)[-1][1]+1), (list(pos)[-1][0], list(pos)[-1][1]-1),
-                      (list(pos)[-1][0]+1, list(pos)[-1][1]), (list(pos)[-1][0]-1, list(pos)[-1][1])]
+            surraw = [(list(pos)[-1][0], list(pos)[-1][1] + 1), (list(pos)[-1][0], list(pos)[-1][1] - 1),
+                      (list(pos)[-1][0] + 1, list(pos)[-1][1]), (list(pos)[-1][0] - 1, list(pos)[-1][1])]
             sur = [i for i in surraw if (0 <= i[0] < self.model.width) and (0 <= i[1] < self.model.height)]
             if self.previous_location in sur and len(sur) > 1:
                 sur.remove(self.previous_location)
@@ -346,28 +406,27 @@ class Scout(Agent):
                 path.append(loc)
                 choices[tuple(path)] = score
 
-
         possible_choices = [k for k, v in choices.items() if v == max(choices.values())]
 
         if (len(possible_choices) > 1 and counter < 3) and max(choices.values()) < 4:
-            possible_choices = self.wander_choice_maker(possible_choices, counter+1)
+            possible_choices = self.wander_choice_maker(possible_choices, counter + 1)
         # elif (len(possible_choices) > 1 and counter >= 3) and max(choices.values()) < 4:
-            # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
-            # rightcount = len(set(right) - set(self.path))
-            # left = [x for x in self.model.grid.empties if x[0] < self.pos[0]]
-            # leftcount = len(set(left) - set(self.path))
-            # up = [x for x in self.model.grid.empties if x[1] > self.pos[1]]
-            # upcount = len(set(up) - set(self.path))
-            # down = [x for x in self.model.grid.empties if x[1] < self.pos[1]]
-            # downcount = len(set(down) - set(self.path))
-            # count_list = [rightcount, leftcount, upcount, downcount]
-            # max_index = count_list.index(max(count_list))
-            # return {
-            #     0: [(self.pos, (self.pos[0] + 1, self.pos[1]))],
-            #     1: [(self.pos, (self.pos[0] - 1, self.pos[1]))],
-            #     2: [(self.pos, (self.pos[0], self.pos[1] + 1))],
-            #     3: [(self.pos, (self.pos[0], self.pos[1] - 1))],
-            #     }.get(max_index)
+        # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
+        # rightcount = len(set(right) - set(self.path))
+        # left = [x for x in self.model.grid.empties if x[0] < self.pos[0]]
+        # leftcount = len(set(left) - set(self.path))
+        # up = [x for x in self.model.grid.empties if x[1] > self.pos[1]]
+        # upcount = len(set(up) - set(self.path))
+        # down = [x for x in self.model.grid.empties if x[1] < self.pos[1]]
+        # downcount = len(set(down) - set(self.path))
+        # count_list = [rightcount, leftcount, upcount, downcount]
+        # max_index = count_list.index(max(count_list))
+        # return {
+        #     0: [(self.pos, (self.pos[0] + 1, self.pos[1]))],
+        #     1: [(self.pos, (self.pos[0] - 1, self.pos[1]))],
+        #     2: [(self.pos, (self.pos[0], self.pos[1] + 1))],
+        #     3: [(self.pos, (self.pos[0], self.pos[1] - 1))],
+        #     }.get(max_index)
         return possible_choices
 
     def goBase(self):
@@ -375,18 +434,50 @@ class Scout(Agent):
         Uses shortest path alg to return to base to return patient
         :return:
         """
+        camploc = (0, 0)
         self.current_path = ()
-        x, y = self.pos
-        if self.pos[0] > 0:
-            self.move_agent((x - 1, y))
-        elif self.pos[1] > 0:
-            self.move_agent((x,y-1))
+        for loc in self.model.grid.get_neighborhood(self.pos, moore=False, include_center=False):
+            if loc not in self.path:
+                self.path.append(loc)
+        opened = [[self.pos, None, 0, 0]]
+        closed = []
+        paths = {}
+        while len(opened) > 0:
+            curnode = opened[0].copy()
+            for i in opened:
+                if i[-1] < curnode[-1]:
+                    curnode = i.copy()
+
+            opened.remove(curnode)
+            closed.append(curnode)
+            paths[curnode[0]] = [curnode[1], curnode[2], curnode[3]]
+
+            if curnode[0] == camploc:
+                shortpath = [camploc]
+                prev = paths[camploc][0]
+                while prev:
+                    shortpath.append(prev)
+                    prev = paths[prev][0]
+                self.model.grid.move_agent(self, shortpath[-2])
+                break
+
+            curcor = curnode[0]
+            next = [(curcor[0], curcor[1] + 1), (curcor[0], curcor[1] - 1), (curcor[0] + 1, curcor[1]),
+                    (curcor[0] - 1, curcor[1])]
+            for j in next:
+                if j in self.path and j not in paths.keys():
+                    destdist = abs(j[0] - camploc[0]) ** 2 + abs(j[1] - camploc[1]) ** 2
+                    nextnode = [j, curcor, curnode[2] + 1, (curnode[2] + 1) + destdist]
+                    for k in opened:
+                        if k[0] == nextnode[0] and k[-2] < nextnode[-2]:
+                            continue
+                    opened.append(nextnode)
 
     def step(self):
         for x in range(2):
             if self.stamina > 0:
                 self.stamina = self.stamina - 1
-            cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True) # coords
+            cell_cross_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)  # coords
             cell_cross = self.model.grid.get_cell_list_contents(cell_cross_coords)
             own_cell = self.model.grid.get_cell_list_contents([self.pos])
             patient = [obj for obj in cell_cross if isinstance(obj, Patient)]
@@ -430,10 +521,12 @@ class Scout(Agent):
             elif len(medcamp) == 1:
                 pass
 
+
 class MedCamp(Agent):
     """
     MedCamp is where Medic will start from and go to, to retrieve Patient
     """
+
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.saved_patients = []
