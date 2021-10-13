@@ -57,7 +57,7 @@ class Triage(Model):
 
     def get_saved_patients(self, agents):
         medcamp = [obj for obj in agents if isinstance(obj, MedCamp)]
-        return len(medcamp[0].saved_patients)
+        return medcamp[0].saved_patients_amount
 
     def step(self):
         self.datacollector.collect(self)

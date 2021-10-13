@@ -47,7 +47,7 @@ def sim_portrayal(agent):
     elif type(agent) is MedCamp:
         portrayal["text"] = "🏥"
         portrayal["Color"] = "#ff9e9e"
-        portrayal["Saved Patients"] = len(MedCamp.__getattribute__(agent, 'saved_patients'))
+        portrayal["Saved Patients"] = MedCamp.__getattribute__(agent, 'saved_patients_amount')
 
     elif type(agent) is Scout:
         portrayal["text"] = "🏃"
