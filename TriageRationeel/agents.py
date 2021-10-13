@@ -161,8 +161,6 @@ class Medic(Agent):
         """
         Searches for patients and bring them back decided by calculations
         """
-        if self.emotional_state <= 0 and self.traumatizedMessage is False:
-
         if self.emotional_state <= 0 and  self.traumatizedMessage is False:
             print("Medic " + str(self.unique_id) + " is traumatized")
             self.traumatizedMessage = True
