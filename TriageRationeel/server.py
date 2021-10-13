@@ -66,10 +66,10 @@ chart_element = ChartModule(
 )
 
 model_params = {
-    "init_patient":UserSettableParameter("slider", "Init_patients", value=2,
+    "init_patient":UserSettableParameter("slider", "Init_patients", value=40,
                                      min_value=1, max_value=sim.grid_width*sim.grid_height-(sim.grid_height+sim.grid_width), step=1),
-    "init_medic": UserSettableParameter("slider", "Init_medics", value=1, min_value=1, max_value=5, step=1),
-    "init_scouts": UserSettableParameter("slider", "Init_scouts", value=0, min_value=0, max_value=10, step=1),
+    "init_medic": UserSettableParameter("slider", "Init_medics", value=2, min_value=1, max_value=5, step=1),
+    "init_scouts": UserSettableParameter("slider", "Init_scouts", value=1, min_value=0, max_value=10, step=1),
     "mode":UserSettableParameter("choice", "Sim_Mode", value="None", choices=["None","constant_info_share", "info_share_medbase","info_share_meet"])
 }#bron: https://github.com/projectmesa/mesa/issues/419
 
