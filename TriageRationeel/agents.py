@@ -108,6 +108,7 @@ class Medic(Agent):
         distance_reach_chance = norm.cdf(z_scores)
         pickup = random.choices(population=[True, False], weights=[distance_reach_chance, 1 - distance_reach_chance])[0]
         if not pickup and not patient.dead:  # als niet pickup en patient is niet dood dan
+            self.emotional_state -= 20
             return
 
         elif not patient.dead:
@@ -295,7 +296,7 @@ class Medic(Agent):
         if len(self.brancard) > 0:
             self.goBase()
             if self.brancard[0].trueHealth == 0:
-                self.emotional_state -= 20
+                self.emotional_state -= 10
                 self.model.grid.place_agent(self.brancard[0], self.pos)
                 self.brancard[0].dead = True
                 self.known_p.remove((self.pos, self.brancard[0]))
