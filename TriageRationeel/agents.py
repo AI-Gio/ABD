@@ -39,21 +39,30 @@ class Medic(Agent):
         new_loc = self.model.grid.get_neighborhood(location, moore=False, include_center=True)
         self.path = self.path + (list(set(new_loc) - set(self.path)))  # removes duplicates
 
+    def sort_known_patients(self):
+        sorted_patients = []
+        for patient in self.known_p:
+            score = 0
+            score -= abs(patient[0][0] - self.pos[0]) + abs(patient[0][1] - self.pos[1])
+            score -= patient[0][0] + patient[0][1]
+            sorted_patients.append(patient + tuple([score]))
+
+        sorted_patients = sorted(sorted_patients, key=lambda x: x[2], reverse=True)
+        self.known_p = [sublist[:-1] for sublist in sorted_patients]
+
     def merge_info(self):
         global global_path
         global global_known_p
-        print(self.known_p)
         global_path = global_path + (list(set(self.path) - set(global_path)))  # removes duplicates
         self.path = self.path + (list(set(global_path) - set(self.path)))  # removes duplicates
 
         # haalt uit global_known_p eerst weg wat in self.known_p_removed zit
-        l3 = [x for x in global_known_p if
-              x not in self.known_p_removed]  # https://stackoverflow.com/questions/4211209/remove-all-the-elements-that-occur-in-one-list-from-another
+        l3 = [x for x in global_known_p if x not in self.known_p_removed]
         global_known_p = l3
         # merge dan alles
         global_known_p = global_known_p + list(set(self.known_p) - set(global_known_p))
         self.known_p = global_known_p
-        print(self.known_p)
+        self.sort_known_patients()
 
     def share_info(self):
         global global_path
@@ -66,6 +75,7 @@ class Medic(Agent):
         global global_known_p
         self.path = self.path + (list(set(global_path) - set(self.path)))  # removes duplicates
         self.known_p = global_known_p
+        self.sort_known_patients()
 
     def inspect(self, patient):
         """
@@ -76,10 +86,10 @@ class Medic(Agent):
         z_scores = (patient.externHealth - self.pos[0] + self.pos[1]) / ((1 / 3) * 10)
         distance_reach_chance = norm.cdf(z_scores)
         pickup = random.choices(population=[True, False], weights=[distance_reach_chance, 1 - distance_reach_chance])[0]
-        if not pickup and patient.dead == False:  # als niet pickup en patient is niet dood dan
+        if not pickup and not patient.dead:  # als niet pickup en patient is niet dood dan
             return
 
-        elif patient.dead == False:
+        elif not patient.dead:
             print("Come. this is no place to die")
             if self.known_p:
                 for i, p in enumerate(self.known_p):
@@ -133,6 +143,8 @@ class Medic(Agent):
             possible_choices = self.wander_choice_maker(original_path)
             self.current_path = list(random.choice(possible_choices)[1::])
 
+        print(self.current_path)
+        print(self.current_path[0])
         self.move_agent(self.current_path[0])
         # print(self.current_path[0], self.unique_id)
         del self.current_path[0]
@@ -206,6 +218,7 @@ class Medic(Agent):
                 l3 = [x for x in ms.known_p if x not in self.known_p_removed]
                 self.known_p = self.known_p + (list(set(l3) - set(self.known_p)))  # removes duplicatess
                 self.path = self.path + (list(set(ms.path) - set(self.path)))  # removes duplicates
+                self.sort_known_patients()
 
         if len(patient) > 0 and len(self.brancard) == 0:
             pati = None
@@ -226,6 +239,7 @@ class Medic(Agent):
                         print(p.unique_id)
                     if not p.dead:
                         self.known_p.append((p.pos, p))
+                        self.sort_known_patients()
                     if p.dead:
                         if (p.pos, p) in self.known_p:
                             self.known_p.remove((p.pos, p))
@@ -257,6 +271,7 @@ class Medic(Agent):
                 self.known_p_removed.append(self.known_p[0])
                 self.known_p.pop(0)
             else:
+                print(self.known_p)
                 self.walk(self.known_p[0][0])
 
         # als brancard leeg is en er zijn geen bekende plekken van patienten
