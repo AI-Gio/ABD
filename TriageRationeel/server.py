@@ -2,8 +2,8 @@ from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
-from TriageRationeel.agents import *
-from TriageRationeel.model import Triage
+from agents import *
+from model import Triage
 
 def sim_portrayal(agent):
     if agent is None:

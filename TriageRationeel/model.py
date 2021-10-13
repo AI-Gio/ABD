@@ -5,7 +5,7 @@ from mesa import Model
 from mesa.time import SimultaneousActivation
 from mesa.datacollection import DataCollector
 
-from TriageRationeel.agents import *
+from agents import *
 
 class Triage(Model):
     """
@@ -52,7 +52,6 @@ class Triage(Model):
         self.datacollector = DataCollector({"Dead_patients": lambda m: m.get_dead_patients(agents),
                                             "Saved_Patients": lambda m: m.get_saved_patients(agents)})
 
-
     def get_dead_patients(self, agents):
         return len([obj for obj in agents if isinstance(obj, Patient) and obj.dead])
 
@@ -63,5 +62,3 @@ class Triage(Model):
     def step(self):
         self.datacollector.collect(self)
         self.schedule.step()
-
-
