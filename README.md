@@ -25,13 +25,17 @@ Our job is to know which mode is the most successful in capturing patients and w
 ### Installing
 
 * To install, simply download the entire file in a zip, unpack it or clone it in a IDE or Github for Windows.
-* After that you can open up the Triage Folder to python files.
+* After that you can open up the TriageRational Folder to python files.
+* Run and only run the server.py file
 
 ### Executing program
 
-* Install mesa 
+* Install libraries
 ```
 pip install mesa
+pip installrandom
+pip install numpy
+pip install scipy
 ```
 * download the code and run it inside an IDE
 
