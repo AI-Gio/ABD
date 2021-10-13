@@ -4,7 +4,7 @@ from mesa.space import MultiGrid
 from mesa import Model
 from mesa.time import SimultaneousActivation
 
-from TriageMoraal.agents import *
+from TestProjects.TriageMoraal.agents import *
 
 class Triage(Model):
     """

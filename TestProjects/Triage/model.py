@@ -1,7 +1,7 @@
 from mesa import Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivation
-from Triage.agents import *
+from TestProjects.Triage.agents import *
 import random
 
 class Triage(Model):
