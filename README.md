@@ -45,11 +45,47 @@ pip install scipy
 Contributors:
 * [@Guy](https://github.com/AI-Gio)
 * [@Ruben](https://github.com/GameModes)
-* [@Quinn](https://google.com)
-* [@Adam](https://google.com)
+* [@Quinn](https://github.com/DragonKiller952)
+* [@Adam](https://github.com/AdamMC-GL)
 
 
 ## Version History
+* 14 - 13-10-21
+   * scout bug fixes
+   * meet bug fixes
+   * general code bug fixes
+
+* 13 - 12-10-21
+   * added datacollector
+   * multiple meet strategies
+
+* 12 - 11-10-21
+   * scouts added
+
+* 11 - 10-10-21
+   * medic stops wandering when explored everything
+
+* 10 - 9-10-21
+   * patients reduce health for every step
+
+* 9 - 6-10-21
+   * agent stuck bug fixed
+
+* 8 - 29-9-21
+   * pickup patient
+   * medic kills patient if too low hp (considering)
+   * neighborhood bug fixes
+
+* 7 - 28-9-21
+   * pathfinder added and code cleaned
+
+* 6 - 27-9-21
+   * pickup-status and health for Patients
+
+* 5 - 23-9-21
+    * Added Path and sightings arrays for the medics
+
+
 * 4 - 15-9-21
     * Model changes & patient, cure & radio agent created
     
