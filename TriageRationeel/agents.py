@@ -452,6 +452,7 @@ class Scout(Agent):
                 while prev:
                     shortpath.append(prev)
                     prev = paths[prev][0]
+                print(shortpath)
                 self.model.grid.move_agent(self, shortpath[-2])
                 break
 
@@ -493,7 +494,7 @@ class Scout(Agent):
                     self.path = self.path + (list(set(ms.path) - set(self.path)))  # removes duplicates
                     # print(any(self.known_p.count(element) > 1 for element in self.known_p))
 
-            if (self.mode == "info_share_medbase" and len(medcamp) > 0) or self.stamina <= 0:
+            if (self.mode == "info_share_medbase" and len(medcamp) <= 0) or (self.stamina <= 0 and len(medcamp) <= 0):
                 self.goBase()
 
                 if self.outMessage is False:
