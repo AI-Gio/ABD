@@ -6,24 +6,22 @@ from scipy.stats import norm
 global_path = [(0, 0), (0, 1), (1, 0)]
 global_known_p = []
 
-
 class Medic(Agent):
     """
     Searches for patients in the field and brings them back to camp, if statistically possible
     """
-
     def __init__(self, unique_id, model, mode="None"):
         super().__init__(unique_id, model)
-        self.brancard = []  # List to carry Patient Classes
-        self.path = [(0, 0), (0, 1), (1, 0)]  # Default path list
-        self.known_p = []  # List to save patients Class and location
+        self.brancard = [] #List to carry Patient Classes
+        self.path = [(0, 0), (0, 1), (1, 0)] #Default path list
+        self.known_p = [] #List to save patients Class and location
         self.current_path = ()
 
         self.pickedup = False  # When picked up this becomes True, to prevent multiple patients to pickup
         self.traumatizedMessage = False  # When traumatized this becomes True, to prevent multiple traumatize messages
-        self.previous_location = None  # When moving this becomes his former coordinates
+        self.previous_location = None  #When moving this becomes his former coordinates
 
-        self.emotional_state = 100  # Emotional state number of the medic
+        self.emotional_state = 100 #Emotional state number of the medic
         self.mode = mode
         self.global_path = global_path
 
@@ -94,22 +92,22 @@ class Medic(Agent):
             possible_choices = self.wander_choice_maker(possible_choices, counter + 1)
         # print(possible_choices, self.unique_id)
         # elif (len(possible_choices) > 1 and counter >= 3) and max(choices.values()) < 4:
-        # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
-        # rightcount = len(set(right) - set(self.path))
-        # left = [x for x in self.model.grid.empties if x[0] < self.pos[0]]
-        # leftcount = len(set(left) - set(self.path))
-        # up = [x for x in self.model.grid.empties if x[1] > self.pos[1]]
-        # upcount = len(set(up) - set(self.path))
-        # down = [x for x in self.model.grid.empties if x[1] < self.pos[1]]
-        # downcount = len(set(down) - set(self.path))
-        # count_list = [rightcount, leftcount, upcount, downcount]
-        # max_index = count_list.index(max(count_list))
-        # return {
-        #     0: [(self.pos, (self.pos[0] + 1, self.pos[1]))],
-        #     1: [(self.pos, (self.pos[0] - 1, self.pos[1]))],
-        #     2: [(self.pos, (self.pos[0], self.pos[1] + 1))],
-        #     3: [(self.pos, (self.pos[0], self.pos[1] - 1))],
-        #     }.get(max_index)
+            # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
+            # rightcount = len(set(right) - set(self.path))
+            # left = [x for x in self.model.grid.empties if x[0] < self.pos[0]]
+            # leftcount = len(set(left) - set(self.path))
+            # up = [x for x in self.model.grid.empties if x[1] > self.pos[1]]
+            # upcount = len(set(up) - set(self.path))
+            # down = [x for x in self.model.grid.empties if x[1] < self.pos[1]]
+            # downcount = len(set(down) - set(self.path))
+            # count_list = [rightcount, leftcount, upcount, downcount]
+            # max_index = count_list.index(max(count_list))
+            # return {
+            #     0: [(self.pos, (self.pos[0] + 1, self.pos[1]))],
+            #     1: [(self.pos, (self.pos[0] - 1, self.pos[1]))],
+            #     2: [(self.pos, (self.pos[0], self.pos[1] + 1))],
+            #     3: [(self.pos, (self.pos[0], self.pos[1] - 1))],
+            #     }.get(max_index)
         return possible_choices
 
     def wander(self):
@@ -250,7 +248,7 @@ class Medic(Agent):
                 ms.path = global_path + (list(set(self.path) - set(ms.path)))  # removes duplicates
                 self.path = self.path + (list(set(ms.path) - set(self.path)))  # removes duplicates
 
-        if len(patient) > 0 and len(self.brancard) == 0:
+        if len(patient) > 0 and len(self.brancard) == 0: # als er een patient om medic heen staat en de brancard is leeg
             pati = None
             for pat in patient:
                 pati = pat
@@ -293,17 +291,14 @@ class Medic(Agent):
             else:
                 self.walk(self.known_p[0][0])
 
-        if len(self.brancard) == 0 and len(
-                self.known_p) == 0:  # als brancard leeg is en er zijn geen bekende plekken van patienten
+        if len(self.brancard) == 0 and len(self.known_p) == 0: # als brancard leeg is en er zijn geen bekende plekken van patienten
             self.wander()
             self.pickedup = False
-
 
 class Patient(Agent):
     """
     Person that is stuck somewhere in the field after a disaster
     """
-
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.severity = random.randint(0, 4)
@@ -333,7 +328,6 @@ class Patient(Agent):
             self.trueHealth -= 0.1
         else:
             self.dead = True
-
 
 class Scout(Agent):
     def __init__(self, unique_id, model, mode="None"):
@@ -411,22 +405,22 @@ class Scout(Agent):
         if (len(possible_choices) > 1 and counter < 3) and max(choices.values()) < 4:
             possible_choices = self.wander_choice_maker(possible_choices, counter + 1)
         # elif (len(possible_choices) > 1 and counter >= 3) and max(choices.values()) < 4:
-        # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
-        # rightcount = len(set(right) - set(self.path))
-        # left = [x for x in self.model.grid.empties if x[0] < self.pos[0]]
-        # leftcount = len(set(left) - set(self.path))
-        # up = [x for x in self.model.grid.empties if x[1] > self.pos[1]]
-        # upcount = len(set(up) - set(self.path))
-        # down = [x for x in self.model.grid.empties if x[1] < self.pos[1]]
-        # downcount = len(set(down) - set(self.path))
-        # count_list = [rightcount, leftcount, upcount, downcount]
-        # max_index = count_list.index(max(count_list))
-        # return {
-        #     0: [(self.pos, (self.pos[0] + 1, self.pos[1]))],
-        #     1: [(self.pos, (self.pos[0] - 1, self.pos[1]))],
-        #     2: [(self.pos, (self.pos[0], self.pos[1] + 1))],
-        #     3: [(self.pos, (self.pos[0], self.pos[1] - 1))],
-        #     }.get(max_index)
+            # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
+            # rightcount = len(set(right) - set(self.path))
+            # left = [x for x in self.model.grid.empties if x[0] < self.pos[0]]
+            # leftcount = len(set(left) - set(self.path))
+            # up = [x for x in self.model.grid.empties if x[1] > self.pos[1]]
+            # upcount = len(set(up) - set(self.path))
+            # down = [x for x in self.model.grid.empties if x[1] < self.pos[1]]
+            # downcount = len(set(down) - set(self.path))
+            # count_list = [rightcount, leftcount, upcount, downcount]
+            # max_index = count_list.index(max(count_list))
+            # return {
+            #     0: [(self.pos, (self.pos[0] + 1, self.pos[1]))],
+            #     1: [(self.pos, (self.pos[0] - 1, self.pos[1]))],
+            #     2: [(self.pos, (self.pos[0], self.pos[1] + 1))],
+            #     3: [(self.pos, (self.pos[0], self.pos[1] - 1))],
+            #     }.get(max_index)
         return possible_choices
 
     def goBase(self):
@@ -506,7 +500,7 @@ class Scout(Agent):
                     print("Scout " + str(self.unique_id) + " is out")
                     self.outMessage = True
 
-            if len(patient) == 0:
+            if len(patient) == 0 and self.stamina > 0:
                 self.wander()
 
             elif len(patient) > 0:
@@ -521,12 +515,10 @@ class Scout(Agent):
             elif len(medcamp) == 1:
                 pass
 
-
 class MedCamp(Agent):
     """
     MedCamp is where Medic will start from and go to, to retrieve Patient
     """
-
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.saved_patients = []
