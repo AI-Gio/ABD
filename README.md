@@ -5,7 +5,15 @@ ABD Challenge: De Triage Simulatie
 
 ## Description
 
-This is an agent based simulation where the agent tries to complete a simulation by achieving or either failing their goal. In our current version of the simulation the agent will try the cure all the infected patients by finding a cure and healing them with it. The agent must try to complete the simulation with the help of deduction and logic in order to win. The agent can interact with the world and percieve it in a limited way.
+This is an agent based simulation where multiple agents try to complete a simulation by achieving or either failing their goal. In our current and final version of the simulation, agents try to help patients in the world. These patients have their own visible health and true health so the agents, lets call them medics, can't figure out there true health. Their job is to find patients, inspect them, consider bringing them to safety or letting them die and bringing them back or continue looking/wandering/. The medics get a little help with finding patients by the scout agents. These can't help the patients, but can help finding them quicker, since of the lack of medic equipment. These scouts use all their effort to walk faster, but after a while they become tired and return to the medcamp. The medics might seem physically strong, but mentally after seeing to many dead bodies or estimated the health poorly (so the patient dies in their hands), the medics become crazy and wont move and are considered dead and will not return to the medcamp. The medcamp is where the medics and scouts start and end. The medcamp is always in the left corner. 
+
+The scouts and medics have their own wanderaround statements to find patients. This process is the most important and can really help the outcome of the simulation. There are 4 modes who can help improve this process:
+* None: They share no information
+* Constant info share: Having communication devices keeps everyone up-to-date
+* Medbase info share: Agents consider finding each other near the medcamp to share information of patients and path
+* Meet info share: Agents wont try to find each other, but when they do, they share information so they have more time to look for more patients
+
+Our job is to know which mode is the most successful in capturing patients and which one let the most patients die
 
 ## Getting Started
 
