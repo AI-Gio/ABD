@@ -121,7 +121,6 @@ class Medic(Agent):
                         if self.mode == "constant_info_share":
                             self.share_info()
             self.brancard.append(patient)
-            patient.carried = True
             self.pickedup = True
             self.model.grid.remove_agent(patient)
 
@@ -290,7 +289,6 @@ class Medic(Agent):
         if len(medcamp) > 0 and len(self.brancard) > 0:
             medcamp[0].saved_patients_amount += 1
             self.brancard[0].in_medcamp = True
-            self.brancard[0].carried = False
             self.brancard = []
             self.pickedup = False
 
@@ -300,7 +298,6 @@ class Medic(Agent):
             if self.brancard[0].trueHealth == 0:
                 self.emotional_state -= 10
                 self.model.grid.place_agent(self.brancard[0], self.pos)
-                self.brancard[0].carried = False
                 self.brancard[0].dead = True
                 self.known_p.remove((self.pos, self.brancard[0]))
                 self.known_p_removed.append((self.pos, self.brancard[0]))
@@ -339,13 +336,11 @@ class Patient(Agent):
         super().__init__(unique_id, model)
         self.severity = random.randint(0, 4)
         self.dead = False
-        self.carried = False
         self.in_medcamp = False
 
     def step(self):
         if not self.in_medcamp:
             self.healthReduce()
-
 
     def createHealth(self, gridSize: list):
         """
@@ -361,10 +356,7 @@ class Patient(Agent):
         """
         Patient reduces health every step by 0.1 until it dies
         """
-        if self.trueHealth > 0 and self.carried:
-            self.externHealth -= 1
-            self.trueHealth -= 1
-        elif self.trueHealth > 0:
+        if self.trueHealth > 0:
             self.externHealth -= 0.1
             self.trueHealth -= 0.1
         else:
