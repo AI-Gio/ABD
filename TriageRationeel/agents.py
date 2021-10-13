@@ -6,22 +6,23 @@ from scipy.stats import norm
 global_path = [(0, 0), (0, 1), (1, 0)]
 global_known_p = []
 
+
 class Medic(Agent):
     """
     Searches for patients in the field and brings them back to camp, if statistically possible
     """
     def __init__(self, unique_id, model, mode="None"):
         super().__init__(unique_id, model)
-        self.brancard = [] #List to carry Patient Classes
-        self.path = [(0, 0), (0, 1), (1, 0)] #Default path list
-        self.known_p = [] #List to save patients Class and location
+        self.brancard = []  # List to carry Patient Classes
+        self.path = [(0, 0), (0, 1), (1, 0)]  # Default path list
+        self.known_p = []  # List to save patients Class and location
         self.current_path = ()
 
         self.pickedup = False  # When picked up this becomes True, to prevent multiple patients to pickup
         self.traumatizedMessage = False  # When traumatized this becomes True, to prevent multiple traumatize messages
-        self.previous_location = None  #When moving this becomes his former coordinates
+        self.previous_location = None  # When moving this becomes his former coordinates
 
-        self.emotional_state = 100 #Emotional state number of the medic
+        self.emotional_state = 100  # Emotional state number of the medic
         self.mode = mode
         self.global_path = global_path
 
@@ -51,7 +52,7 @@ class Medic(Agent):
         print('Patient ' + str(patient.unique_id) + ': ' + str(patient.trueHealth) + "hp")
         z_scores = (patient.externHealth - len(self.goBase()) - 1) / ((1 / 3) * 10)
         distance_reach_chance = norm.cdf(z_scores)
-        pickup = random.choices(population=[True, False], weights=[distance_reach_chance, 1 - distance_reach_chance])[0]
+        pickup = random.choices(population=[True, False], weights=[distance_reach_chance, 1-distance_reach_chance])[0]
         if not pickup and not patient.dead:  # als niet pickup en patient is niet dood dan
             return
 
@@ -67,9 +68,6 @@ class Medic(Agent):
             self.model.grid.remove_agent(patient)
 
     def wander_choice_maker(self, locations, counter=0):
-        """
-
-        """
         choices = {}
         for pos in locations:
             surraw = [(list(pos)[-1][0], list(pos)[-1][1] + 1), (list(pos)[-1][0], list(pos)[-1][1] - 1),
@@ -276,8 +274,6 @@ class Medic(Agent):
             self.brancard = []
             self.pickedup = False
 
-        nb_coords = self.model.grid.get_neighborhood(self.pos, moore=False, include_center=True)
-
         if len(self.brancard) > 0:  # als de brancard vol is
             self.model.grid.move_agent(self, self.goBase()[-2])
             if self.brancard[0].trueHealth == 0:
@@ -295,12 +291,14 @@ class Medic(Agent):
             else:
                 self.walk(self.known_p[0][0])
 
-        if len(self.brancard) == 0 and len(self.known_p) == 0:  # als brancard leeg is en er zijn geen bekende plekken van patienten
+        # als brancard leeg is en er zijn geen bekende plekken van patienten
+        if len(self.brancard) == 0 and len(self.known_p) == 0:
             self.wander()
             self.pickedup = False
 
         if self.mode == "constant_info_share" or (self.mode == "info_share_medbase" and len(medcamp) > 0):
             self.share_info()
+
 
 class Patient(Agent):
     """
@@ -311,6 +309,8 @@ class Patient(Agent):
         self.severity = random.randint(0, 4)
         self.dead = False
         self.in_medcamp = False
+        self.externHealth = None
+        self.trueHealth = None
 
     def step(self):
         if not self.in_medcamp:
@@ -335,6 +335,7 @@ class Patient(Agent):
             self.trueHealth -= 0.1
         else:
             self.dead = True
+
 
 class Scout(Agent):
     def __init__(self, unique_id, model, mode="None"):
@@ -408,7 +409,7 @@ class Scout(Agent):
 
         possible_choices = [k for k, v in choices.items() if v == max(choices.values())]
 
-        if (len(possible_choices) > 1 and counter < 3) and max(choices.values()) < 4:
+        if (len(possible_choices) > 1 and counter < 1) and max(choices.values()) < 4:
             possible_choices = self.wander_choice_maker(possible_choices, counter + 1)
         # elif (len(possible_choices) > 1 and counter >= 3) and max(choices.values()) < 4:
             # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
@@ -524,6 +525,7 @@ class Scout(Agent):
 
             if self.mode == "constant_info_share" or (self.mode == "info_share_medbase" and len(medcamp) > 0):
                 self.share_info()
+
 
 class MedCamp(Agent):
     """
