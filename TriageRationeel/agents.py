@@ -476,6 +476,7 @@ class Scout(Agent):
                     opened.append(nextnode)
 
     def step(self):
+        print('step')
         for x in range(2):
             if self.stamina > 0:
                 self.stamina = self.stamina - 1
@@ -486,9 +487,11 @@ class Scout(Agent):
             medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
 
             if self.mode == "constant_info_share" or (self.mode == "info_share_medbase" and len(medcamp) > 0):
+                print('getting info')
                 self.get_info()
 
             if self.mode == "info_share_meet":
+                print('sharing info')
                 medics = [obj for obj in cell_cross if isinstance(obj, Medic)]
                 scouts = [obj for obj in cell_cross if isinstance(obj, Scout)]
                 medics_and_scouts = medics + scouts
@@ -501,7 +504,8 @@ class Scout(Agent):
                     self.path = self.path + (list(set(ms.path) - set(self.path)))  # removes duplicates
                     # print(any(self.known_p.count(element) > 1 for element in self.known_p))
 
-            if (self.mode == "info_share_medbase" and len(medcamp) <= 0) or (self.stamina <= 0 and len(medcamp) <= 0):
+            if self.stamina <= 0 and len(medcamp) <= 0:
+                print('ga naar base')
                 self.goBase()
 
                 if self.outMessage is False:
@@ -509,9 +513,11 @@ class Scout(Agent):
                     self.outMessage = True
 
             if len(patient) == 0 and self.stamina > 0:
+                print('wandering')
                 self.wander()
 
             elif len(patient) > 0:
+                print('wandering but saw patient')
                 for p in patient:
                     if p.pos not in [p[0] for p in self.known_p]:
                         if p.pos is None:
@@ -524,6 +530,7 @@ class Scout(Agent):
                 pass
 
             if self.mode == "constant_info_share" or (self.mode == "info_share_medbase" and len(medcamp) > 0):
+                print('sharing info')
                 self.share_info()
 
 
