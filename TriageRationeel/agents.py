@@ -120,24 +120,6 @@ class Medic(Agent):
 
         if (len(possible_choices) > 1 and counter < 3) and max(choices.values()) < 4:
             possible_choices = self.wander_choice_maker(possible_choices, counter + 1)
-        # print(possible_choices, self.unique_id)
-        # elif (len(possible_choices) > 1 and counter >= 3) and max(choices.values()) < 4:
-        # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
-        # rightcount = len(set(right) - set(self.path))
-        # left = [x for x in self.model.grid.empties if x[0] < self.pos[0]]
-        # leftcount = len(set(left) - set(self.path))
-        # up = [x for x in self.model.grid.empties if x[1] > self.pos[1]]
-        # upcount = len(set(up) - set(self.path))
-        # down = [x for x in self.model.grid.empties if x[1] < self.pos[1]]
-        # downcount = len(set(down) - set(self.path))
-        # count_list = [rightcount, leftcount, upcount, downcount]
-        # max_index = count_list.index(max(count_list))
-        # return {
-        #     0: [(self.pos, (self.pos[0] + 1, self.pos[1]))],
-        #     1: [(self.pos, (self.pos[0] - 1, self.pos[1]))],
-        #     2: [(self.pos, (self.pos[0], self.pos[1] + 1))],
-        #     3: [(self.pos, (self.pos[0], self.pos[1] - 1))],
-        #     }.get(max_index)
         return possible_choices
 
     def wander(self):
@@ -414,23 +396,6 @@ class Scout(Agent):
 
         if (len(possible_choices) > 1 and counter < 3) and max(choices.values()) < 4:
             possible_choices = self.wander_choice_maker(possible_choices, counter + 1)
-        # elif (len(possible_choices) > 1 and counter >= 3) and max(choices.values()) < 4:
-        # right = [x for x in self.model.grid.empties if x[0] > self.pos[0]]
-        # rightcount = len(set(right) - set(self.path))
-        # left = [x for x in self.model.grid.empties if x[0] < self.pos[0]]
-        # leftcount = len(set(left) - set(self.path))
-        # up = [x for x in self.model.grid.empties if x[1] > self.pos[1]]
-        # upcount = len(set(up) - set(self.path))
-        # down = [x for x in self.model.grid.empties if x[1] < self.pos[1]]
-        # downcount = len(set(down) - set(self.path))
-        # count_list = [rightcount, leftcount, upcount, downcount]
-        # max_index = count_list.index(max(count_list))
-        # return {
-        #     0: [(self.pos, (self.pos[0] + 1, self.pos[1]))],
-        #     1: [(self.pos, (self.pos[0] - 1, self.pos[1]))],
-        #     2: [(self.pos, (self.pos[0], self.pos[1] + 1))],
-        #     3: [(self.pos, (self.pos[0], self.pos[1] - 1))],
-        #     }.get(max_index)
         return possible_choices
 
     def goBase(self):

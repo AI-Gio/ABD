@@ -5,7 +5,7 @@ from mesa import Model
 from mesa.time import SimultaneousActivation
 from mesa.datacollection import DataCollector
 
-from agents import *
+from TriageRationeel.agents import *
 
 class Triage(Model):
     """
