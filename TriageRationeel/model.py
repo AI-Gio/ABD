@@ -11,7 +11,7 @@ class Triage(Model):
     """
     Simulation of Triage
     """
-    # hier worden alle agents aangemaakt en geplaatst en grid aangemaakt
+    # Here get all the agents made and placed in the grid
     def __init__(self, width=20, height=20, init_medic=2, init_patient=9, init_scouts=0, mode="None"):
         self.width = width
         self.height = height
@@ -49,13 +49,17 @@ class Triage(Model):
         self.schedule.add(medcamp)
 
         agents = self.schedule.agents
+
+        # Graphs the amount of patients that have been saved or died
         self.datacollector = DataCollector({"Dead_patients": lambda m: m.get_dead_patients(agents),
                                             "Saved_Patients": lambda m: m.get_saved_patients(agents)})
 
     def get_dead_patients(self, agents):
+        """Graphs the amount of patients that have died"""
         return len([obj for obj in agents if isinstance(obj, Patient) and obj.dead])
 
     def get_saved_patients(self, agents):
+        """Graphs the amount of patients that have been saved"""
         medcamp = [obj for obj in agents if isinstance(obj, MedCamp)]
         return medcamp[0].saved_patients_amount
 

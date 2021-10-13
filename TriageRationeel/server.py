@@ -5,6 +5,8 @@ from mesa.visualization.UserParam import UserSettableParameter
 from TriageRationeel.agents import *
 from TriageRationeel.model import Triage
 
+"""Run this script to launch the simulation"""
+
 def sim_portrayal(agent):
     if agent is None:
         return
