@@ -35,13 +35,10 @@ class Medic(Agent):
         global global_path
         global global_known_p
         global_path = global_path + (list(set(self.path) - set(global_path)))  # removes duplicates
-        global_known_p = self.known_p
-
-    def get_info(self):
-        global global_path
-        global global_known_p
         self.path = self.path + (list(set(global_path) - set(self.path)))  # removes duplicates
-        self.known_p = global_known_p
+
+        global_known_p = global_known_p + (list(set(self.known_p) - set(global_known_p)))  # removes duplicates
+        self.known_p = self.known_p + (list(set(global_known_p) - set(self.known_p)))  # removes duplicates
 
     def inspect(self, patient):
         """
@@ -61,7 +58,6 @@ class Medic(Agent):
                 for i, p in enumerate(self.known_p):
                     if patient == p[1]:
                         self.known_p.pop(i)
-                        self.share_info()
             self.brancard.append(patient)
             self.pickedup = True
             self.model.grid.remove_agent(patient)
@@ -165,6 +161,7 @@ class Medic(Agent):
         """
         Searches for patients and bring them back decided by calculations
         """
+        if self.emotional_state <= 0 and self.traumatizedMessage is False:
 
         if self.emotional_state <= 0 and  self.traumatizedMessage is False:
             print("Medic " + str(self.unique_id) + " is traumatized")
@@ -185,7 +182,7 @@ class Medic(Agent):
         medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
 
         if self.mode == "constant_info_share" or (self.mode == "info_share_medbase" and len(medcamp) > 0):
-            self.get_info()
+            self.share_info()
 
         if self.mode == "info_share_meet":
             medics = [obj for obj in cell_cross if isinstance(obj, Medic)]
@@ -236,18 +233,15 @@ class Medic(Agent):
                 self.wander()
                 self.pickedup = False
 
-        elif len(self.known_p) > 0:  # als er locaties van patient zijn onthouden
+        elif len(self.known_p) > 0: # als er locaties van patient zijn onthouden
             if self.known_p[0][0] == self.pos and self.known_p[0][0] not in own_cell:
                 self.known_p.pop(0)
             else:
                 self.walk(self.known_p[0][0])
 
-        if len(self.brancard) == 0 and len(self.known_p) == 0:  # als brancard leeg is en er zijn geen bekende plekken van patienten
+        if len(self.brancard) == 0 and len(self.known_p) == 0: # als brancard leeg is en er zijn geen bekende plekken van patienten
             self.wander()
             self.pickedup = False
-
-        if self.mode == "constant_info_share" or (self.mode == "info_share_medbase" and len(medcamp) > 0):
-            self.share_info()
 
 class Patient(Agent):
     """
@@ -306,16 +300,17 @@ class Scout(Agent):
         self.path = self.path + (list(set(new_loc) - set(self.path)))  # removes duplicates
 
     def share_info(self):
+        """
+        adds self path and known_p into a global variable so other agents can see it and use it
+        """
         global global_path
         global global_known_p
         global_path = global_path + (list(set(self.path) - set(global_path)))  # removes duplicates
-        global_known_p = self.known_p
-
-    def get_info(self):
-        global global_path
-        global global_known_p
         self.path = self.path + (list(set(global_path) - set(self.path)))  # removes duplicates
-        self.known_p = global_known_p
+
+        global_known_p = global_known_p + (list(set(self.known_p) - set(global_known_p)))  # removes duplicates
+        self.known_p = self.known_p + (list(set(global_known_p) - set(self.known_p)))  # removes duplicates
+        # print(len(self.known_p), self.unique_id)
 
     def wander(self):
         """
@@ -400,7 +395,7 @@ class Scout(Agent):
             medcamp = [obj for obj in own_cell if isinstance(obj, MedCamp)]
 
             if self.mode == "constant_info_share" or (self.mode == "info_share_medbase" and len(medcamp) > 0):
-                self.get_info()
+                self.share_info()
 
             if self.mode == "info_share_meet":
                 medics = [obj for obj in cell_cross if isinstance(obj, Medic)]
@@ -422,7 +417,7 @@ class Scout(Agent):
                     print("Scout " + str(self.unique_id) + " is out")
                     self.outMessage = True
 
-            if len(patient) == 0 and self.stamina > 0:
+            if len(patient) == 0:
                 self.wander()
 
             elif len(patient) > 0:
@@ -436,9 +431,6 @@ class Scout(Agent):
                 self.wander()
             elif len(medcamp) == 1:
                 pass
-
-            if self.mode == "constant_info_share" or (self.mode == "info_share_medbase" and len(medcamp) > 0):
-                self.share_info()
 
 class MedCamp(Agent):
     """

@@ -48,10 +48,17 @@ class Triage(Model):
         self.grid.place_agent(medcamp, (0,0))
         self.schedule.add(medcamp)
 
-        self.datacollector = DataCollector({"Dead_patients": lambda m: m.get_dead_patient()})
+        agents = self.schedule.agents
+        self.datacollector = DataCollector({"Dead_patients": lambda m: m.get_dead_patients(agents),
+                                            "Saved_Patients": lambda m: m.get_saved_patients(agents)})
 
-    def get_dead_patient(self):
-        return len([obj for obj in self.schedule.agents if isinstance(obj, Patient) and obj.dead])
+
+    def get_dead_patients(self, agents):
+        return len([obj for obj in agents if isinstance(obj, Patient) and obj.dead])
+
+    def get_saved_patients(self, agents):
+        medcamp = [obj for obj in agents if isinstance(obj, MedCamp)]
+        return len(medcamp[0].saved_patients)
 
     def step(self):
         self.datacollector.collect(self)
