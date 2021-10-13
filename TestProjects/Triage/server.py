@@ -1,8 +1,8 @@
 from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.modules import CanvasGrid
 
-from Triage.agents import *
-from Triage.model import Triage
+from TestProjects.Triage.agents import *
+from TestProjects.Triage.model import Triage
 
 def simulation_portrayal(agent):
     if agent is None:
